@@ -260,20 +260,20 @@
     <button class="case-btn accent" id="shareBtn">📤 分享／匯出備份</button>
     <button class="case-btn" id="importBtn">⭱ 匯入備份</button>
     <button class="case-btn accent" id="pdfBtn">🖨 匯出彩色PDF（全部四階段）</button>
-    <button class="case-btn accent" id="sheetBtn">🔗 連接 Google Sheet</button>
+    <button class="case-btn accent" id="sheetBtn">🔗 Google Sheet 設定（管理者用）</button>
     <button class="case-btn" id="sheetGuideBtn">📄 下載設定教學</button>
     <button class="case-btn" id="sheetSyncBtn" style="display:none;">🔄 立即同步</button>
     <input type="file" id="importFileInput" accept="application/json" style="display:none">
     <span class="storage-mode" id="storageModeLabel">儲存模式：偵測中…</span>
     <span class="storage-mode" id="sheetStatusLabel">Google Sheet：未連接</span>
-    <div class="case-hint">每個「個案／專案」各自獨立記錄一、二、三、四共四大階段的完整進度；切換上方選單即可查看或填寫不同案件。「分享／匯出備份」可在手機上直接透過 LINE／訊息／郵件傳送備份檔；「匯入備份」可在其他裝置還原。「匯出彩色PDF」會一次列印四大階段並保留狀態顏色。「連接 Google Sheet」可讓多人透過同一份 Google 試算表即時同步所有個案資料（需先部署 Apps Script，詳見下載的設定說明檔）。</div>
+    <div class="case-hint">每個「個案／專案」各自獨立記錄一、二、三、四共四大階段的完整進度；切換上方選單即可查看或填寫不同案件。本頁面已內建公司共用的 Google Sheet 網址，開啟頁面即自動同步，不需要手動連接；「🔗 Google Sheet 設定」按鈕僅供管理者更換試算表時使用。「分享／匯出備份」可在手機上直接透過 LINE／訊息／郵件傳送備份檔；「匯入備份」可在其他裝置還原。「匯出彩色PDF」會一次列印四大階段並保留狀態顏色。</div>
     <div class="case-hint" id="storageWarning" style="display:none; color:var(--red); font-weight:700;">⚠️ 偵測到目前瀏覽器無法自動儲存（可能為隱私瀏覽模式），請改用一般模式，或改用 Chrome／Edge／Safari 開啟，否則填寫內容可能無法保存，建議隨時按「分享／匯出備份」保存進度。</div>
   </div>
 
   <div class="diff-note">
     <b>四大階段銜接說明：</b>本表將開發案件全生命週期串成一、都市更新事業（事業概要→事業計畫擬訂〈含實施者自辦公聽會〉→報核→審議公展聽證→核定發布→權利變換執行與拆遷）→ 二、建照流程 → 三、營建工程管理 → 四、使照流程，共四大階段依序管理。都更事業完成權利變換執行、拆遷及申請拆除執照後，即銜接至「二、建照流程」申請建造執照。<br/>
     <b>使用方式：</b>點選下方分頁切換四大階段；每個步驟可點擊右側狀態鈕循環切換「未開始→進行中→已完成→卡關待處理」，展開步驟可填寫負責人、預定與實際完成日期及備註。<br/>
-    <b>多人同步：</b>點「🔗 連接 Google Sheet」並貼上部署好的 Apps Script 網址後，所有個案資料會同時寫入同一份 Google 試算表，團隊成員各自在自己的瀏覽器開啟本頁面、連接同一個試算表網址，即可看到彼此更新的進度（需先完成一次性設定，詳見下載的設定說明）。
+    <b>多人同步：</b>本頁面已內建公司共用的 Google Sheet 網址，團隊成員只要打開這個網頁，就會自動同步同一份試算表資料，不需要各自手動連接；管理者如需更換試算表，可用「🔗 Google Sheet 設定」按鈕貼上新的 Apps Script 網址。
   </div>
   <div class="caveat-note">
     ⚠️ 都市更新事業概要／事業計畫報核期限、公展、聽證及審議時程，均會因個案異議處理、都更會排定會議等因素而變動；各階段法定審查天數、程序及應備書件僅供參考整理，實際仍請以都市更新處、工務局、建管處及建築師公會最新公告為準；使用執照銜接流程請依所在縣市對應之使照追蹤表辦理。
@@ -296,7 +296,7 @@
   <div id="megaSections"></div>
 
   <footer class="note">
-    此進度表可依「個案／專案」分開建立與填寫，涵蓋都更整合、建照、營建、使照共四大階段；資料會自動儲存——在 Claude.ai 內開啟時同步至雲端供團隊共用，若下載後以瀏覽器直接開啟則自動改存於該瀏覽器（本機）。建議定期使用「分享／匯出備份」保存或傳送檔案（手機可直接分享至 LINE、訊息、郵件等 App），需要在其他裝置或與同事共用時，用「匯入備份」還原即可；也可用「匯出彩色PDF」將目前個案四大階段含狀態顏色一次存成 PDF 留存。若需多人即時共同編輯同一份資料，可透過「連接 Google Sheet」串接團隊共用的 Google 試算表。<br/>
+    此進度表可依「個案／專案」分開建立與填寫，涵蓋都更整合、建照、營建、使照共四大階段；資料會自動儲存——在 Claude.ai 內開啟時同步至雲端供團隊共用，若下載後以瀏覽器直接開啟則自動改存於該瀏覽器（本機）；已部署為網頁版時，本頁面內建公司共用的 Google Sheet 網址，開啟即自動同步，不需手動連接。建議定期使用「分享／匯出備份」保存或傳送檔案（手機可直接分享至 LINE、訊息、郵件等 App），需要在其他裝置或與同事共用時，用「匯入備份」還原即可；也可用「匯出彩色PDF」將目前個案四大階段含狀態顏色一次存成 PDF 留存。<br/>
     內容依都市更新條例、都市危險及老舊建築物加速重建條例、建築法及各地方政府建管處／都市更新處公告資料整理，流程與時程僅供參考，實際依承辦機關公告及個案狀況調整。
   </footer>
 </div>
@@ -477,8 +477,15 @@ let activeMegaId = MEGA[0].id;
 
 // ---- Google Sheet 同步層（選用，供多人跨裝置即時共同編輯）----
 const SHEET_URL_KEY = 'quanliucheng-sheet-url';
-let sheetUrl = null;
-try{ sheetUrl = localStorage.getItem(SHEET_URL_KEY) || null; }catch(e){ sheetUrl = null; }
+// 公司內建的 Google Sheet 同步後端（Apps Script 部署網址）。
+// 所有人開啟本頁面時會自動連接這組網址，不需要各自手動貼上。
+// 之後若要更換試算表，管理者可點「🔗 連接 Google Sheet」貼上新網址覆蓋。
+const DEFAULT_SHEET_URL = 'https://script.google.com/macros/s/AKfycbxi8bz7jIayDTrVFpi6dpaGlYiVn1QwS5RY57LmmjMs9bV3SEN0P_sAYPIvUPK2k22s/exec';
+let sheetUrl = DEFAULT_SHEET_URL;
+try{
+  const savedSheetUrl = localStorage.getItem(SHEET_URL_KEY);
+  if(savedSheetUrl){ sheetUrl = savedSheetUrl; }
+}catch(e){ sheetUrl = DEFAULT_SHEET_URL; }
 let sheetLastSyncAt = null;
 
 function updateSheetStatusLabel(s){
@@ -1274,12 +1281,12 @@ document.getElementById('sheetGuideBtn').addEventListener('click', ()=>{
 '   請完整複製這組網址（結尾是 /exec）。',
 '',
 '【第五步】在追蹤表網頁連接',
-'1. 開啟本追蹤表網頁，點選上方「🔗 連接 Google Sheet」按鈕。',
+'1. 開啟本追蹤表網頁，點選上方「🔗 Google Sheet 設定（管理者用）」按鈕。',
 '2. 貼上剛剛複製的網址，按下確定，出現「連接成功」訊息即完成。',
 '',
 '【第六步】讓團隊成員一起使用',
 '1. 把追蹤表 HTML 檔案以及同一組 Apps Script 網址一起分享給同事。',
-'2. 同事開啟追蹤表，同樣點「🔗 連接 Google Sheet」貼上同一組網址即可同步。',
+'2. 若已設定好內建網址，同事開啟追蹤表即會自動同步，不需再手動操作。',
 '3. 可點選「🔄 立即同步」按鈕手動重新讀取一次。',
 '',
 '【重要提醒】',
@@ -1389,17 +1396,28 @@ document.getElementById('sheetGuideBtn').addEventListener('click', ()=>{
   URL.revokeObjectURL(url);
 });
 
-// ---- 連接 Google Sheet ----
+// ---- 連接 Google Sheet（預設已自動連接公司內建網址，此按鈕僅供管理者更換） ----
 document.getElementById('sheetBtn').addEventListener('click', async ()=>{
+  const previous = sheetUrl;
   const current = sheetUrl || '';
-  const url = prompt('請貼上已部署的 Google Apps Script 網路應用程式網址（結尾通常為 /exec）。\n若尚未設定，請先下載「設定教學」依步驟建立，或留白後按確定以取消連接：', current);
+  const url = prompt('目前已自動連接公司內建的 Google Sheet。\n如需更換，請貼上新部署的 Apps Script 網址（結尾通常為 /exec）；\n留白後按確定，會還原為內建的預設網址：', current);
   if(url === null) return;
   const trimmed = url.trim();
   if(!trimmed){
-    sheetUrl = null;
+    sheetUrl = DEFAULT_SHEET_URL;
     try{ localStorage.removeItem(SHEET_URL_KEY); }catch(e){}
-    updateSheetStatusLabel();
-    alert('已取消連接 Google Sheet，將只使用原本的儲存方式。');
+    updateSheetStatusLabel('syncing');
+    try{
+      await loadCases();
+      await loadCurrentCaseId();
+      await loadState();
+      renderCaseBar();
+      renderAllMegas();
+      renderSummary();
+      updateLastUpdateBadge();
+      updateSheetStatusLabel('ok');
+    }catch(e){ updateSheetStatusLabel('error'); }
+    alert('已還原為預設的 Google Sheet 網址。');
     return;
   }
   const testUrl = trimmed;
@@ -1420,7 +1438,7 @@ document.getElementById('sheetBtn').addEventListener('click', async ()=>{
     updateLastUpdateBadge();
   }catch(e){
     console.error(e);
-    sheetUrl = null;
+    sheetUrl = previous;
     updateSheetStatusLabel();
     alert('連接失敗，請確認網址是否正確、Apps Script 是否已部署為「所有人」皆可存取。錯誤訊息：'+e.message);
   }
