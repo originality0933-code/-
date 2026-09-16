@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>新北市都市更新事業進度追蹤表</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@500;700;900&family=Noto+Sans+TC:wght@400;500;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#EDEAE1; --paper-deep:#E2DED2; --line:#CFC9B8; --ink:#232922; --ink-soft:#5B6155;
+    --navy:#2E4A63; --navy-deep:#1E3348; --amber:#B9791F; --amber-bg:#F3E3C6;
+    --green:#4B7A5D; --green-bg:#DCE6DD; --red:#A6402C; --red-bg:#EEDAD3;
+    --grey:#9B9581; --grey-bg:#DEDACB; --white:#FAF8F2;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{ background:var(--paper); color:var(--ink); font-family:'Noto Sans TC', sans-serif; line-height:1.55; padding:20px 14px 60px; }
+  .sheet{ max-width:1180px; margin:0 auto; }
+
+  .titleblock{
+    border:2px solid var(--ink); background:var(--white); padding:18px 22px;
+    display:flex; justify-content:space-between; align-items:flex-end; gap:16px; flex-wrap:wrap;
+    margin-bottom:14px; position:relative;
+  }
+  .titleblock::before{ content:""; position:absolute; inset:6px; border:1px solid var(--line); pointer-events:none; }
+  .tb-left h1{ font-family:'Noto Serif TC', serif; font-weight:900; font-size:25px; margin:0 0 6px; letter-spacing:.02em; }
+  .tb-left p{ margin:0; font-size:13px; color:var(--ink-soft); }
+  .tb-right{ text-align:right; font-family:'JetBrains Mono', monospace; font-size:12px; color:var(--ink-soft); }
+  .tb-right .badge{
+    display:inline-block; margin-top:6px; padding:3px 10px; background:var(--navy); color:var(--white);
+    font-family:'Noto Sans TC',sans-serif; font-size:12px; border-radius:2px;
+  }
+
+  .diff-note{
+    background:var(--white); border:1px solid var(--line); border-left:5px solid var(--amber);
+    padding:12px 16px; font-size:12.5px; color:var(--ink-soft); margin-bottom:10px; line-height:1.7;
+  }
+  .diff-note b{ color:var(--ink); }
+  .caveat-note{
+    background:var(--amber-bg); border:1px solid var(--amber);
+    padding:10px 16px; font-size:12px; color:var(--ink); margin-bottom:22px; line-height:1.7;
+  }
+  .sheet-note{
+    background:var(--green-bg); border:1px solid var(--green);
+    padding:10px 16px; font-size:12px; color:var(--ink); margin-bottom:22px; line-height:1.7;
+  }
+
+  .summary{
+    display:flex; gap:14px; align-items:center; background:var(--white);
+    border:1px solid var(--line); padding:14px 18px; margin-bottom:26px; flex-wrap:wrap;
+  }
+  .summary .pct{ font-family:'JetBrains Mono', monospace; font-size:30px; font-weight:700; color:var(--navy-deep); min-width:78px; }
+  .bar-track{ flex:1; min-width:180px; height:10px; background:var(--grey-bg); border-radius:6px; overflow:hidden; }
+  .bar-fill{ height:100%; background:linear-gradient(90deg, var(--navy), var(--green)); width:0%; transition:width .4s ease; }
+  .legend{ display:flex; gap:12px; font-size:12px; color:var(--ink-soft); flex-wrap:wrap; }
+  .legend span{ display:flex; align-items:center; gap:5px; }
+  .dot{ width:9px; height:9px; border-radius:50%; display:inline-block; }
+  .reset-btn{
+    margin-left:auto; font-family:'Noto Sans TC',sans-serif; font-size:12px; background:transparent;
+    border:1px solid var(--ink-soft); color:var(--ink-soft); padding:6px 12px; border-radius:2px; cursor:pointer;
+  }
+  .reset-btn:hover{ border-color:var(--red); color:var(--red); }
+  .reset-btn:disabled{ opacity:.5; cursor:default; }
+
+  .flow-title{ font-family:'Noto Serif TC', serif; font-weight:700; font-size:17px; margin:0 0 12px; color:var(--navy-deep); }
+  .flow-wrap{ overflow-x:auto; padding-bottom:12px; margin-bottom:34px; -webkit-overflow-scrolling:touch; }
+  .flow-track{ display:flex; gap:0; min-width:max-content; padding:4px 2px 18px; }
+  .phase-block{ display:flex; flex-direction:column; padding:0 10px; position:relative; }
+  .phase-label{
+    font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--white); background:var(--phase-color, var(--navy));
+    padding:4px 10px; border-radius:2px 2px 0 0; display:inline-block; width:fit-content; margin-bottom:8px; letter-spacing:.03em;
+  }
+  .phase-steps{ display:flex; align-items:stretch; gap:0; }
+  .node{
+    background:var(--white); border:1.5px solid var(--phase-color, var(--navy)); border-radius:3px;
+    width:150px; padding:9px 10px 10px; font-size:11.5px; cursor:pointer;
+    transition:transform .15s ease, box-shadow .15s ease; position:relative;
+  }
+  .node:hover{ transform:translateY(-2px); box-shadow:0 3px 8px rgba(30,51,72,.18); }
+  .node .num{ font-family:'JetBrains Mono', monospace; font-weight:700; font-size:11px; color:var(--phase-color, var(--navy)); }
+  .node .ttl{ display:block; margin-top:3px; color:var(--ink); font-size:11.5px; line-height:1.35; min-height:44px; }
+  .node .dur{ display:block; margin-top:6px; font-family:'JetBrains Mono', monospace; font-size:10px; color:var(--amber); font-weight:700; }
+  .node .stchip{ position:absolute; top:-8px; right:-6px; width:16px; height:16px; border-radius:50%; border:2px solid var(--white); }
+  .connector{ width:20px; display:flex; align-items:center; justify-content:center; color:var(--ink-soft); font-size:15px; flex-shrink:0; }
+  .phase-gap{ width:26px; flex-shrink:0; }
+
+  .phase-section{ margin-bottom:22px; border:1px solid var(--line); background:var(--white); }
+  .phase-header{ padding:12px 16px; display:flex; align-items:center; gap:10px; border-left:6px solid var(--phase-color, var(--navy)); background:var(--paper-deep); }
+  .phase-header h2{ font-family:'Noto Serif TC', serif; font-size:15.5px; margin:0; color:var(--navy-deep); }
+  .phase-header .ph-code{
+    font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--white);
+    background:var(--phase-color, var(--navy)); padding:2px 8px; border-radius:2px;
+  }
+  .phase-header .ph-count{ margin-left:auto; font-family:'JetBrains Mono', monospace; font-size:12px; color:var(--ink-soft); }
+  .phase-header .ph-owner{
+    font-family:'Noto Sans TC',sans-serif; font-size:11px; color:var(--white);
+    background:var(--ink-soft); padding:2px 8px; border-radius:2px;
+  }
+
+  .step-row{ border-top:1px solid var(--line); }
+  .step-row summary{ list-style:none; cursor:pointer; padding:12px 16px; display:flex; align-items:flex-start; gap:12px; }
+  .step-row summary::-webkit-details-marker{ display:none; }
+  .step-row summary::before{ content:"›"; font-size:16px; color:var(--ink-soft); transition:transform .15s ease; line-height:1.4; }
+  .step-row[open] summary::before{ transform:rotate(90deg); }
+  .step-idx{ font-family:'JetBrains Mono', monospace; font-weight:700; font-size:13px; color:var(--ink-soft); width:22px; flex-shrink:0; padding-top:1px; }
+  .step-main{ flex:1; min-width:0; }
+  .step-title{ font-size:14px; font-weight:500; color:var(--ink); }
+  .step-dur{ font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--amber); margin-top:3px; }
+  .status-btn{
+    font-family:'Noto Sans TC',sans-serif; font-size:12px; font-weight:700; border:none;
+    border-radius:3px; padding:6px 12px; cursor:pointer; white-space:nowrap; flex-shrink:0; color:var(--white);
+  }
+
+  .step-detail{ padding:0 16px 16px 50px; }
+  .sub-list{ margin:0 0 12px; padding:0; list-style:none; }
+  .sub-list li{ display:flex; align-items:flex-start; gap:8px; font-size:13px; color:var(--ink-soft); margin-bottom:6px; }
+  .sub-list input[type=checkbox]{ margin-top:3px; accent-color:var(--navy); width:14px; height:14px; flex-shrink:0; }
+  .sub-list .checked{ text-decoration:line-through; color:var(--grey); }
+
+  .fields{ display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:10px; margin-top:6px; }
+  .field label{ display:block; font-family:'JetBrains Mono', monospace; font-size:10px; color:var(--ink-soft); margin-bottom:3px; letter-spacing:.03em; }
+  .field input, .field textarea{
+    width:100%; border:1px solid var(--line); background:var(--paper); padding:6px 8px;
+    font-family:'Noto Sans TC',sans-serif; font-size:12.5px; color:var(--ink); border-radius:2px;
+  }
+  .field textarea{ resize:vertical; min-height:34px; }
+  .field input:focus, .field textarea:focus{ outline:2px solid var(--navy); outline-offset:0; }
+
+  footer.note{ font-size:11.5px; color:var(--ink-soft); text-align:center; margin-top:26px; line-height:1.7; }
+
+  .loading-mask{
+    position:fixed; inset:0; background:var(--paper); display:flex; align-items:center; justify-content:center;
+    font-family:'JetBrains Mono', monospace; font-size:13px; color:var(--ink-soft); z-index:999; transition:opacity .25s ease;
+  }
+  .loading-mask.hide{ opacity:0; pointer-events:none; }
+
+  .sync-flag{ font-size:10px; color:var(--ink-soft); margin-left:6px; }
+  .sync-flag.saving{ color:var(--amber); }
+  .sync-flag.error{ color:var(--red); }
+
+  @media (max-width:640px){
+    .titleblock{ flex-direction:column; align-items:flex-start; }
+    .tb-right{ text-align:left; }
+    .node{ width:120px; }
+  }
+</style>
+</head>
+<body>
+<div class="loading-mask" id="loadingMask">正在從 Google 試算表載入進度資料…</div>
+<div class="sheet">
+
+  <div class="titleblock">
+    <div class="tb-left">
+      <h1>新北市都市更新事業進度追蹤表</h1>
+      <p>新北市政府都市更新處・依「新北市都市更新案件審查作業要點」及都市更新條例整理</p>
+    </div>
+    <div class="tb-right">
+      公開展覽法定不得少於30日（都市更新條例第32條）<br/>
+      <span class="badge" id="lastUpdateBadge">尚未更新</span>
+    </div>
+  </div>
+
+  <div class="diff-note">
+    <b>本表涵蓋範圍：</b>從劃定更新單元到權利變換核定發布實施為止的「規劃審議」階段；核定發布後進入拆除重建施工，可另銜接本系列已建立的<b>建照／使照流程追蹤表</b>繼續使用。<br/>
+    <b>新北市特色：</b>由專責機關<b>新北市政府都市更新處</b>受理審議，與臺北市相同設有專責機關；差異在新北市已明文公告較具體的補正及展延期限（詳見下方提示），可作為進度追蹤的時間基準。
+  </div>
+  <div class="caveat-note">
+    ⚠️ 依「新北市都市更新案件審查作業要點」及「新北市都市更新審議原則」：一般補正期限第一次30日、第二次30日；涉及計畫書圖修正等第一次60日、第二次30日；未附建築線指示圖第一次15日。專案小組會議後，應於會議紀錄送達翌日起<b>90日內</b>修正報核（逾期未報核得命重行提都更會審議），得申請展延一次（事業概要30日／協議合建事業計畫30日／權利變換事業計畫或權利變換計畫90日）。事業概要報核期限以<b>1年</b>為原則，特殊情況經都更會同意最長可延至2年。以上為新北市已公告之明確時限，其餘未明文規定之步驟仍請以個案審議進度為準。
+  </div>
+  <div class="sheet-note">
+    📊 此頁面資料實際存放在本網頁對應的 Google 試算表「進度資料」工作表中，多人開啟此連結時看到的是同一份資料；也可以直接打開該試算表檢視或匯出。
+  </div>
+
+  <div class="summary">
+    <div class="pct" id="pctLabel">0%</div>
+    <div class="bar-track"><div class="bar-fill" id="barFill"></div></div>
+    <div class="legend">
+      <span><i class="dot" style="background:var(--grey)"></i>未開始</span>
+      <span><i class="dot" style="background:var(--amber)"></i>進行中</span>
+      <span><i class="dot" style="background:var(--green)"></i>已完成</span>
+      <span><i class="dot" style="background:var(--red)"></i>卡關待處理</span>
+    </div>
+    <button class="reset-btn" id="resetBtn">重置全部進度</button>
+  </div>
+
+  <h2 class="flow-title">流程總覽（點選節點可跳至下方核對清單）</h2>
+  <div class="flow-wrap">
+    <div class="flow-track" id="flowTrack"></div>
+  </div>
+
+  <div id="checklist"></div>
+
+  <footer class="note">
+    此進度表資料儲存於本試算表中，供業務開發、企劃及與都更處聯繫之人員共同檢視及更新，所有使用者皆可看到並修改同一份進度資料。<br/>
+    內容依都市更新條例、「新北市都市更新案件審查作業要點」及「新北市都市更新審議原則」整理，流程與時程僅供參考，實際依承辦機關公告及個案狀況調整。
+  </footer>
+</div>
+
+<script>
+const PHASES = {
+  A:{name:'事業概要', color:'#2E4A63', owner:''},
+  B:{name:'事業計畫擬訂', color:'#4B7A88', owner:''},
+  C:{name:'審查、公展與聽證', color:'#B9791F', owner:'跑照／都更承辦人員'},
+  D:{name:'核定發布實施', color:'#6A6B3E', owner:''},
+  E:{name:'權利變換執行與拆遷', color:'#4B7A5D', owner:'營造／業務人員'}
+};
+
+const STEPS = [
+ {id:1, phase:'A', title:'劃定都市更新單元（自行劃定或依政府公告更新地區範圍）', sub:['確認基地是否位於公告更新地區','如自行劃定，核對新北市自行劃定都市更新單元檢核表'], dur:''},
+ {id:2, phase:'A', title:'擬訂都市更新事業概要，取得法定比例土地及建物所有權人同意', sub:['擬訂事業概要書','取得同意書（土地及合法建物所有權人）'], dur:''},
+ {id:3, phase:'A', title:'申請核准都市更新事業概要（送新北市政府都市更新處）', sub:[], dur:''},
+ {id:4, phase:'A', title:'都更會審議事業概要並核准；事業計畫報核期限以1年為原則', sub:[], dur:'報核期限1年，特殊情況最長延至2年'},
+ {id:5, phase:'B', title:'擬訂都市更新事業計畫（及權利變換計畫，如採權利變換方式實施）', sub:['都市更新事業計畫書','權利變換計畫書（如適用）'], dur:''},
+ {id:6, phase:'B', title:'取得事業計畫階段法定比例土地及建物所有權人同意', sub:['取得同意書並完成造冊'], dur:''},
+ {id:7, phase:'B', title:'申請都市更新事業計畫報核', sub:['備齊土地及建物謄本（申請當日）','檢附建築線指示（定）圖（如需）'], dur:'書圖等補正：第一次60日／第二次30日；建築線圖第一次15日'},
+ {id:8, phase:'C', title:'主管機關受理，辦理公開展覽及公辦公聽會', sub:['公開展覽公告','公辦公聽會'], dur:'公展法定不得少於30日'},
+ {id:9, phase:'C', title:'公展期間人民陳情意見處理及答復', sub:[], dur:''},
+ {id:10, phase:'C', title:'都更會專案小組審查（必要時多次審查會議）', sub:['第一次專案小組審查','後續審查（如有）'], dur:'會議紀錄送達翌日起90日內修正報核'},
+ {id:11, phase:'C', title:'權利變換計畫依法舉辦聽證程序', sub:['聽證公告','舉辦聽證','聽證紀錄作成'], dur:''},
+ {id:12, phase:'D', title:'都更會大會決議通過', sub:[], dur:''},
+ {id:13, phase:'D', title:'陳報核定，公告發布實施都市更新事業計畫（及權利變換計畫）', sub:['事業計畫核定發布','權利變換計畫核定發布（如適用）'], dur:''},
+ {id:14, phase:'E', title:'權利變換啟動：地上物拆遷、他項權利清償或提存，申請拆除執照', sub:['地上物拆遷協議','他項權利清償或提存','申請拆除執照'], dur:''},
+];
+
+const STATUS_ORDER = ['not_started','in_progress','done','blocked'];
+const STATUS_META = {
+  not_started:{label:'未開始', color:'var(--grey)'},
+  in_progress:{label:'進行中', color:'var(--amber)'},
+  done:{label:'已完成', color:'var(--green)'},
+  blocked:{label:'卡關待處理', color:'var(--red)'}
+};
+
+let state = null;
+const saveTimers = {}; // 每個 step id 各自 debounce
+
+function defaultState(){
+  const steps = {};
+  STEPS.forEach(s=>{
+    steps[s.id] = {status:'not_started', owner:'', target:'', actual:'', note:'', subs: s.sub.map(()=>false)};
+  });
+  return {steps, updatedAt:null};
+}
+
+// ---- 與 Apps Script 後端溝通 ----
+
+function loadState(){
+  return new Promise((resolve)=>{
+    google.script.run
+      .withSuccessHandler((result)=>{
+        const base = defaultState();
+        STEPS.forEach(s=>{
+          if(result && result.steps && result.steps[s.id]){
+            base.steps[s.id] = Object.assign(base.steps[s.id], result.steps[s.id]);
+            if(!Array.isArray(base.steps[s.id].subs) || base.steps[s.id].subs.length !== s.sub.length){
+              const src = result.steps[s.id].subs || [];
+              base.steps[s.id].subs = s.sub.map((_,i)=> !!src[i]);
+            }
+          }
+        });
+        base.updatedAt = (result && result.updatedAt) || null;
+        state = base;
+        resolve();
+      })
+      .withFailureHandler((err)=>{
+        console.error('讀取試算表資料失敗', err);
+        state = defaultState();
+        resolve();
+      })
+      .getState();
+  });
+}
+
+function scheduleSave(id){
+  const flag = document.querySelector('.sync-flag[data-id="'+id+'"]');
+  if(flag){ flag.textContent = '待儲存…'; flag.className = 'sync-flag saving'; }
+  clearTimeout(saveTimers[id]);
+  saveTimers[id] = setTimeout(()=>{
+    const s = state.steps[id];
+    const patch = {status:s.status, owner:s.owner, target:s.target, actual:s.actual, note:s.note, subs:s.subs};
+    if(flag){ flag.textContent = '儲存中…'; flag.className = 'sync-flag saving'; }
+    google.script.run
+      .withSuccessHandler((res)=>{
+        state.updatedAt = (res && res.updatedAt) || new Date().toISOString();
+        updateLastUpdateBadge();
+        if(flag){ flag.textContent = '已同步'; flag.className = 'sync-flag'; setTimeout(()=>{ if(flag) flag.textContent=''; }, 1500); }
+      })
+      .withFailureHandler((err)=>{
+        console.error('儲存失敗', err);
+        if(flag){ flag.textContent = '儲存失敗，稍後重試'; flag.className = 'sync-flag error'; }
+      })
+      .saveStep(id, patch);
+  }, 500);
+}
+
+function updateLastUpdateBadge(){
+  const el = document.getElementById('lastUpdateBadge');
+  if(!state.updatedAt){ el.textContent = '尚未更新'; return; }
+  const d = new Date(state.updatedAt);
+  const pad = n=>String(n).padStart(2,'0');
+  el.textContent = `最後更新 ${d.getFullYear()}/${pad(d.getMonth()+1)}/${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+function renderSummary(){
+  const done = STEPS.filter(s=>state.steps[s.id].status==='done').length;
+  const pct = Math.round(done/STEPS.length*100);
+  document.getElementById('pctLabel').textContent = pct+'%';
+  document.getElementById('barFill').style.width = pct+'%';
+}
+
+function cycleStatus(id){
+  const cur = state.steps[id].status;
+  const idx = STATUS_ORDER.indexOf(cur);
+  state.steps[id].status = STATUS_ORDER[(idx+1) % STATUS_ORDER.length];
+  renderSummary();
+  renderFlow();
+  renderStatusButton(id);
+  scheduleSave(id);
+}
+
+function renderStatusButton(id){
+  const btn = document.querySelector(`.status-btn[data-id="${id}"]`);
+  if(!btn) return;
+  const meta = STATUS_META[state.steps[id].status];
+  btn.textContent = meta.label;
+  btn.style.background = meta.color;
+}
+
+function renderFlow(){
+  const track = document.getElementById('flowTrack');
+  track.innerHTML = '';
+  const phaseKeys = Object.keys(PHASES);
+  phaseKeys.forEach((pk, pIdx)=>{
+    const block = document.createElement('div');
+    block.className = 'phase-block';
+    block.style.setProperty('--phase-color', PHASES[pk].color);
+
+    const label = document.createElement('div');
+    label.className = 'phase-label';
+    label.style.setProperty('--phase-color', PHASES[pk].color);
+    label.textContent = `${pk}・${PHASES[pk].name}`;
+    block.appendChild(label);
+
+    const stepsWrap = document.createElement('div');
+    stepsWrap.className = 'phase-steps';
+
+    const stepsInPhase = STEPS.filter(s=>s.phase===pk);
+    stepsInPhase.forEach((s, sIdx)=>{
+      const node = document.createElement('div');
+      node.className = 'node';
+      node.style.setProperty('--phase-color', PHASES[pk].color);
+      node.onclick = ()=>{
+        const row = document.getElementById('step-'+s.id);
+        if(row){ row.open = true; row.scrollIntoView({behavior:'smooth', block:'center'}); }
+      };
+      node.innerHTML = `
+        <span class="num">${String(s.id).padStart(2,'0')}</span>
+        <span class="ttl">${s.title}</span>
+        ${s.dur ? `<span class="dur">${s.dur}</span>` : ''}
+      `;
+      const chip = document.createElement('span');
+      chip.className = 'stchip';
+      chip.style.background = STATUS_META[state.steps[s.id].status].color;
+      node.appendChild(chip);
+      stepsWrap.appendChild(node);
+
+      if(sIdx < stepsInPhase.length - 1){
+        const conn = document.createElement('div');
+        conn.className = 'connector';
+        conn.textContent = '→';
+        stepsWrap.appendChild(conn);
+      }
+    });
+
+    block.appendChild(stepsWrap);
+    track.appendChild(block);
+
+    if(pIdx < phaseKeys.length - 1){
+      const gap = document.createElement('div');
+      gap.className = 'connector phase-gap';
+      gap.textContent = '⇒';
+      track.appendChild(gap);
+    }
+  });
+}
+
+function renderChecklist(){
+  const wrap = document.getElementById('checklist');
+  wrap.innerHTML = '';
+  Object.keys(PHASES).forEach(pk=>{
+    const stepsInPhase = STEPS.filter(s=>s.phase===pk);
+    const section = document.createElement('div');
+    section.className = 'phase-section';
+    section.style.setProperty('--phase-color', PHASES[pk].color);
+
+    const header = document.createElement('div');
+    header.className = 'phase-header';
+    header.style.setProperty('--phase-color', PHASES[pk].color);
+    header.innerHTML = `
+      <span class="ph-code" style="background:${PHASES[pk].color}">${pk}</span>
+      <h2>${PHASES[pk].name}</h2>
+      ${PHASES[pk].owner ? `<span class="ph-owner">${PHASES[pk].owner}</span>` : ''}
+      <span class="ph-count">${stepsInPhase[0].id}–${stepsInPhase[stepsInPhase.length-1].id}</span>
+    `;
+    section.appendChild(header);
+
+    stepsInPhase.forEach(s=>{
+      const row = document.createElement('details');
+      row.className = 'step-row';
+      row.id = 'step-'+s.id;
+
+      const summary = document.createElement('summary');
+      summary.innerHTML = `
+        <span class="step-idx">${String(s.id).padStart(2,'0')}</span>
+        <span class="step-main">
+          <span class="step-title">${s.title}</span>
+          ${s.dur ? `<span class="step-dur">⏱ ${s.dur}</span>` : ''}
+          <span class="sync-flag" data-id="${s.id}"></span>
+        </span>
+      `;
+      const statusBtn = document.createElement('button');
+      statusBtn.className = 'status-btn';
+      statusBtn.type = 'button';
+      statusBtn.setAttribute('data-id', s.id);
+      statusBtn.onclick = (e)=>{ e.preventDefault(); e.stopPropagation(); cycleStatus(s.id); };
+      const meta = STATUS_META[state.steps[s.id].status];
+      statusBtn.textContent = meta.label;
+      statusBtn.style.background = meta.color;
+      summary.appendChild(statusBtn);
+      row.appendChild(summary);
+
+      const detail = document.createElement('div');
+      detail.className = 'step-detail';
+
+      if(s.sub.length){
+        const ul = document.createElement('ul');
+        ul.className = 'sub-list';
+        s.sub.forEach((txt, i)=>{
+          const li = document.createElement('li');
+          const cb = document.createElement('input');
+          cb.type = 'checkbox';
+          cb.checked = !!state.steps[s.id].subs[i];
+          cb.onchange = ()=>{
+            state.steps[s.id].subs[i] = cb.checked;
+            span.classList.toggle('checked', cb.checked);
+            scheduleSave(s.id);
+          };
+          const span = document.createElement('span');
+          span.textContent = txt;
+          if(cb.checked) span.classList.add('checked');
+          li.appendChild(cb);
+          li.appendChild(span);
+          ul.appendChild(li);
+        });
+        detail.appendChild(ul);
+      }
+
+      const fields = document.createElement('div');
+      fields.className = 'fields';
+      fields.innerHTML = `
+        <div class="field">
+          <label>負責人</label>
+          <input type="text" data-f="owner" value="${escapeHtml(state.steps[s.id].owner)}" placeholder="都更承辦 / 業務 / 顧問"/>
+        </div>
+        <div class="field">
+          <label>預定日期</label>
+          <input type="text" data-f="target" value="${escapeHtml(state.steps[s.id].target)}" placeholder="YYYY/MM"/>
+        </div>
+        <div class="field">
+          <label>實際完成日期</label>
+          <input type="text" data-f="actual" value="${escapeHtml(state.steps[s.id].actual)}" placeholder="YYYY/MM"/>
+        </div>
+        <div class="field" style="grid-column:1/-1">
+          <label>備註</label>
+          <textarea data-f="note" placeholder="審議意見、陳情處理、同意比例進度、補正期限等">${escapeHtml(state.steps[s.id].note)}</textarea>
+        </div>
+      `;
+      fields.querySelectorAll('[data-f]').forEach(input=>{
+        input.addEventListener('input', ()=>{
+          state.steps[s.id][input.getAttribute('data-f')] = input.value;
+          scheduleSave(s.id);
+        });
+      });
+      detail.appendChild(fields);
+
+      row.appendChild(detail);
+      section.appendChild(row);
+    });
+
+    wrap.appendChild(section);
+  });
+}
+
+function escapeHtml(str){
+  return (str||'').replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+
+document.getElementById('resetBtn').addEventListener('click', ()=>{
+  if(!confirm('確定要重置所有人的進度資料嗎？此動作無法復原。')) return;
+  const btn = document.getElementById('resetBtn');
+  btn.disabled = true;
+  btn.textContent = '重置中…';
+  google.script.run
+    .withSuccessHandler(async ()=>{
+      await loadState();
+      renderFlow();
+      renderChecklist();
+      renderSummary();
+      updateLastUpdateBadge();
+      btn.disabled = false;
+      btn.textContent = '重置全部進度';
+    })
+    .withFailureHandler((err)=>{
+      console.error('重置失敗', err);
+      alert('重置失敗，請稍後再試。');
+      btn.disabled = false;
+      btn.textContent = '重置全部進度';
+    })
+    .resetAll();
+});
+
+async function init(){
+  await loadState();
+  renderFlow();
+  renderChecklist();
+  renderSummary();
+  updateLastUpdateBadge();
+  document.getElementById('loadingMask').classList.add('hide');
+}
+init();
+</script>
+</body>
+</html>
