@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="color-scheme" content="light" />
+<title>新北市危老重建暨容積移轉暨建照整合進度追蹤表（雲端連線版）</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@500;700;900&family=Noto+Sans+TC:wght@400;500;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#EDEAE1; --paper-deep:#E2DED2; --line:#CFC9B8; --ink:#232922; --ink-soft:#5B6155;
+    --navy:#2E4A63; --navy-deep:#1E3348; --amber:#B9791F; --amber-bg:#F3E3C6;
+    --green:#4B7A5D; --green-bg:#DCE6DD; --red:#A6402C; --red-bg:#EEDAD3;
+    --grey:#9B9581; --grey-bg:#DEDACB; --white:#FAF8F2;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{ background:var(--paper); color:var(--ink); font-family:'Noto Sans TC', sans-serif; line-height:1.55; padding:20px 14px 60px; }
+  .sheet{ max-width:1180px; margin:0 auto; }
+
+  .titleblock{
+    border:2px solid var(--ink); background:var(--white); padding:18px 22px;
+    display:flex; justify-content:space-between; align-items:flex-end; gap:16px; flex-wrap:wrap;
+    margin-bottom:14px; position:relative;
+  }
+  .titleblock::before{ content:""; position:absolute; inset:6px; border:1px solid var(--line); pointer-events:none; }
+  .tb-left h1{ font-family:'Noto Serif TC', serif; font-weight:900; font-size:22px; margin:0 0 6px; letter-spacing:.02em; }
+  .tb-left p{ margin:0; font-size:13px; color:var(--ink-soft); }
+  .tb-right{ text-align:right; font-family:'JetBrains Mono', monospace; font-size:12px; color:var(--ink-soft); position:relative; z-index:1; }
+  .tb-right .who{ display:flex; align-items:center; gap:6px; justify-content:flex-end; margin-bottom:8px; }
+  .tb-right .who label{ font-family:'Noto Sans TC',sans-serif; }
+  .tb-right .who input{
+    font-family:'Noto Sans TC',sans-serif; font-size:12px; padding:3px 7px; width:118px;
+    border:1px solid var(--line); background:var(--paper); border-radius:2px; color:var(--ink);
+  }
+  .badge{
+    display:inline-block; margin-top:4px; margin-left:5px; padding:3px 10px; background:var(--navy); color:var(--white);
+    font-family:'Noto Sans TC',sans-serif; font-size:12px; border-radius:2px;
+  }
+  .badge.offline{ background:var(--grey); }
+  .badge.online{ background:var(--green); }
+  .badge.time{ background:var(--ink-soft); }
+
+  .key-callout{
+    background:var(--red-bg); border:2px solid var(--red);
+    padding:14px 18px; margin-bottom:10px; border-radius:2px;
+  }
+  .key-callout .kc-label{
+    display:inline-block; font-family:'JetBrains Mono',monospace; font-size:11px; font-weight:700;
+    color:var(--white); background:var(--red); padding:2px 8px; border-radius:2px; margin-bottom:8px;
+  }
+  .key-callout p{ margin:0 0 6px; font-size:13px; color:var(--ink); line-height:1.75; }
+  .key-callout p:last-child{ margin-bottom:0; }
+  .key-callout b{ color:var(--red); }
+
+  .diff-note{
+    background:var(--white); border:1px solid var(--line); border-left:5px solid var(--amber);
+    padding:12px 16px; font-size:12.5px; color:var(--ink-soft); margin-bottom:22px; line-height:1.7;
+  }
+  .diff-note b{ color:var(--ink); }
+
+  .summary{
+    display:flex; gap:14px; align-items:center; background:var(--white);
+    border:1px solid var(--line); padding:14px 18px; margin-bottom:26px; flex-wrap:wrap;
+  }
+  .summary .pct{ font-family:'JetBrains Mono', monospace; font-size:30px; font-weight:700; color:var(--navy-deep); min-width:78px; }
+  .bar-track{ flex:1; min-width:180px; height:10px; background:var(--grey-bg); border-radius:6px; overflow:hidden; }
+  .bar-fill{ height:100%; background:linear-gradient(90deg, var(--navy), var(--green)); width:0%; transition:width .4s ease; }
+  .legend{ display:flex; gap:12px; font-size:12px; color:var(--ink-soft); flex-wrap:wrap; }
+  .legend span{ display:flex; align-items:center; gap:5px; }
+  .dot{ width:9px; height:9px; border-radius:50%; display:inline-block; }
+  .reset-btn{
+    margin-left:auto; font-family:'Noto Sans TC',sans-serif; font-size:12px; background:transparent;
+    border:1px solid var(--ink-soft); color:var(--ink-soft); padding:6px 12px; border-radius:2px; cursor:pointer;
+  }
+  .reset-btn:hover{ border-color:var(--red); color:var(--red); }
+
+  .flow-title{ font-family:'Noto Serif TC', serif; font-weight:700; font-size:17px; margin:0 0 12px; color:var(--navy-deep); }
+  .flow-wrap{ overflow-x:auto; padding-bottom:12px; margin-bottom:34px; -webkit-overflow-scrolling:touch; }
+  .flow-track{ display:flex; gap:0; min-width:max-content; padding:4px 2px 18px; }
+  .phase-block{ display:flex; flex-direction:column; padding:0 10px; position:relative; }
+  .phase-label{
+    font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--white); background:var(--phase-color, var(--navy));
+    padding:4px 10px; border-radius:2px 2px 0 0; display:inline-block; width:fit-content; margin-bottom:8px; letter-spacing:.03em;
+  }
+  .phase-steps{ display:flex; align-items:stretch; gap:0; }
+  .node{
+    background:var(--white); border:1.5px solid var(--phase-color, var(--navy)); border-radius:3px;
+    width:150px; padding:9px 10px 10px; font-size:11.5px; cursor:pointer;
+    transition:transform .15s ease, box-shadow .15s ease; position:relative;
+  }
+  .node.critical{ border-width:2.5px; box-shadow:0 0 0 2px var(--red-bg); }
+  .node:hover{ transform:translateY(-2px); box-shadow:0 3px 8px rgba(30,51,72,.18); }
+  .node .num{ font-family:'JetBrains Mono', monospace; font-weight:700; font-size:11px; color:var(--phase-color, var(--navy)); }
+  .node .ttl{ display:block; margin-top:3px; color:var(--ink); font-size:11.5px; line-height:1.35; min-height:44px; }
+  .node .dur{ display:block; margin-top:6px; font-family:'JetBrains Mono', monospace; font-size:10px; color:var(--amber); font-weight:700; }
+  .node .critical-flag{ display:block; margin-top:4px; font-size:9.5px; font-weight:700; color:var(--red); }
+  .node .stchip{ position:absolute; top:-8px; right:-6px; width:16px; height:16px; border-radius:50%; border:2px solid var(--white); }
+  .connector{ width:20px; display:flex; align-items:center; justify-content:center; color:var(--ink-soft); font-size:15px; flex-shrink:0; }
+  .phase-gap{ width:26px; flex-shrink:0; }
+
+  .phase-section{ margin-bottom:22px; border:1px solid var(--line); background:var(--white); }
+  .phase-header{ padding:12px 16px; display:flex; align-items:center; gap:10px; border-left:6px solid var(--phase-color, var(--navy)); background:var(--paper-deep); }
+  .phase-header h2{ font-family:'Noto Serif TC', serif; font-size:15.5px; margin:0; color:var(--navy-deep); }
+  .phase-header .ph-code{
+    font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--white);
+    background:var(--phase-color, var(--navy)); padding:2px 8px; border-radius:2px;
+  }
+  .phase-header .ph-count{ margin-left:auto; font-family:'JetBrains Mono', monospace; font-size:12px; color:var(--ink-soft); }
+  .phase-header .ph-owner{
+    font-family:'Noto Sans TC',sans-serif; font-size:11px; color:var(--white);
+    background:var(--ink-soft); padding:2px 8px; border-radius:2px;
+  }
+
+  .step-row{ border-top:1px solid var(--line); }
+  .step-row.critical{ background:var(--red-bg); }
+  .step-row summary{ list-style:none; cursor:pointer; padding:12px 16px; display:flex; align-items:flex-start; gap:12px; }
+  .step-row summary::-webkit-details-marker{ display:none; }
+  .step-row summary::before{ content:"›"; font-size:16px; color:var(--ink-soft); transition:transform .15s ease; line-height:1.4; }
+  .step-row[open] summary::before{ transform:rotate(90deg); }
+  .step-idx{ font-family:'JetBrains Mono', monospace; font-weight:700; font-size:13px; color:var(--ink-soft); width:22px; flex-shrink:0; padding-top:1px; }
+  .step-main{ flex:1; min-width:0; }
+  .step-title{ font-size:14px; font-weight:500; color:var(--ink); }
+  .step-dur{ font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--amber); margin-top:3px; }
+  .step-flag{ font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--red); margin-top:3px; font-weight:700; }
+  .status-btn{
+    font-family:'Noto Sans TC',sans-serif; font-size:12px; font-weight:700; border:none;
+    border-radius:3px; padding:6px 12px; cursor:pointer; white-space:nowrap; flex-shrink:0; color:var(--white);
+  }
+
+  .step-detail{ padding:0 16px 16px 50px; }
+  .sub-list{ margin:0 0 12px; padding:0; list-style:none; }
+  .sub-list li{ display:flex; align-items:flex-start; gap:8px; font-size:13px; color:var(--ink-soft); margin-bottom:6px; }
+  .sub-list input[type=checkbox]{ margin-top:3px; accent-color:var(--navy); width:14px; height:14px; flex-shrink:0; }
+  .sub-list .checked{ text-decoration:line-through; color:var(--grey); }
+
+  .fields{ display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:10px; margin-top:6px; }
+  .field label{ display:block; font-family:'JetBrains Mono', monospace; font-size:10px; color:var(--ink-soft); margin-bottom:3px; letter-spacing:.03em; }
+  .field input, .field textarea{
+    width:100%; border:1px solid var(--line); background:var(--paper); padding:6px 8px;
+    font-family:'Noto Sans TC',sans-serif; font-size:12.5px; color:var(--ink); border-radius:2px;
+  }
+  .field textarea{ resize:vertical; min-height:34px; }
+  .field input:focus, .field textarea:focus{ outline:2px solid var(--navy); outline-offset:0; }
+
+  footer.note{ font-size:11.5px; color:var(--ink-soft); text-align:center; margin-top:26px; line-height:1.7; }
+
+  @media (max-width:640px){
+    .titleblock{ flex-direction:column; align-items:flex-start; }
+    .tb-right{ text-align:left; }
+    .tb-right .who{ justify-content:flex-start; }
+    .node{ width:120px; }
+  }
+</style>
+</head>
+<body>
+<div class="sheet">
+
+  <div class="titleblock">
+    <div class="tb-left">
+      <h1>新北市危老重建暨容積移轉暨建照整合進度追蹤表</h1>
+      <p>新北市政府都市更新處／工務局・從危老適用資格確認到建造執照核發之全流程整合</p>
+    </div>
+    <div class="tb-right">
+      <div class="who">
+        <label>記錄者</label>
+        <input id="userName" type="text" placeholder="輸入你的名字" autocomplete="off" />
+      </div>
+      <span class="badge offline" id="connBadge">本機模式</span>
+      <span class="badge time" id="lastUpdateBadge">尚未更新</span>
+    </div>
+  </div>
+
+  <div class="key-callout">
+    <span class="kc-label">關鍵時序</span>
+    <p>危老重建計畫如需<b>透過容積移轉增加容積</b>，容積移轉之<b>許可證明須在重建計畫核准之前取得</b>，重建計畫核准函才會核發——這是C階段（容積移轉申請）排在D、E階段（重建計畫申請與核准）之前的原因。新北市容積移轉已簡化為兩階段（書面審查→容積量體評定），免建照併掛、免先買地，可縮短此段時程。</p>
+    <p>重建計畫核准後，才進入建照階段：先備妥建照應備書表圖說，送<b>新北市建築師公會</b>辦理掛號初審與技術審查，同時涉及消防、都市計畫等業務者採<b>平行分會</b>同步審查（G階段），最後由<b>工務局建照科</b>複核並核准發照（H階段）——這部分與本系列已建立的「新北市建照流程進度追蹤表」是同一套審查分工。</p>
+  </div>
+
+  <div class="diff-note">
+    <b>若不需要容積移轉：</b>可直接略過C階段，A、B、D、E、F、G、H階段即為單純「危老重建到建照」的完整流程。<br/>
+    <b>若你的案件已取得重建計畫核准，只需要跑建照：</b>可直接從F階段（建照前置準備）開始使用本表，或改用本系列單獨的「新北市建照流程進度追蹤表」。
+  </div>
+
+  <div class="summary">
+    <div class="pct" id="pctLabel">0%</div>
+    <div class="bar-track"><div class="bar-fill" id="barFill"></div></div>
+    <div class="legend">
+      <span><i class="dot" style="background:var(--grey)"></i>未開始</span>
+      <span><i class="dot" style="background:var(--amber)"></i>進行中</span>
+      <span><i class="dot" style="background:var(--green)"></i>已完成</span>
+      <span><i class="dot" style="background:var(--red)"></i>卡關待處理</span>
+    </div>
+    <button class="reset-btn" id="resetBtn">重置全部進度</button>
+  </div>
+
+  <h2 class="flow-title">流程總覽（紅框節點為容積移轉須完成之關鍵節點，點選節點可跳至下方核對清單）</h2>
+  <div class="flow-wrap">
+    <div class="flow-track" id="flowTrack"></div>
+  </div>
+
+  <div id="checklist"></div>
+
+  <footer class="note">
+    此進度表資料儲存於連接的 Google 試算表，供業務開發、都更／危老顧問、建築師事務所與工務人員共同檢視及更新，所有連上同一份試算表的使用者皆可看到並修改同一份進度資料。<br/>
+    內容依都市危險及老舊建築物加速重建條例、「新北市都市計畫容積移轉許可審查要點」及新北市政府工務局建照申請、公會協審實務整理，流程與時程僅供參考，實際依承辦機關公告及個案狀況調整；容積移轉與危老核准間之時序依一般實務原則整理，個案仍請以承辦機關確認為準。
+  </footer>
+</div>
+
+<script>
+/* ============================================================
+   ★★★ 唯一要改的地方：把 Google Apps Script 部署後的網址貼進來 ★★★
+   ------------------------------------------------------------
+   1. 依「學員懶人包」建好 Google 試算表、貼上 GAS 程式碼
+   2. 部署為「網頁應用程式」，存取權限選「所有人 (Anyone)」
+   3. 複製那個以 /exec 結尾的網址，貼在下面雙引號中間
+   例：const GAS_URL = "https://script.google.com/macros/s/AKfycb..../exec";
+
+   在還沒貼網址之前，本表會用「本機模式」（資料只存在這台裝置），
+   方便你先把介面秀給大家看；貼上網址後就變成多人即時共用。
+   ============================================================ */
+const GAS_URL = "https://script.google.com/macros/s/AKfycby6s6E8McRH64FAFPuZmpHlvMki-wUckkIm9svo1Vgj-o3gU_ChJGkg3L53LboGt2gY/exec";
+/* ============================================================ */
+
+const PHASES = {
+  A:{name:'適用資格確認', color:'#2E4A63', owner:''},
+  B:{name:'結構安全性能評估（初評／詳評）', color:'#B9791F', owner:'評估機構／都更危老顧問'},
+  C:{name:'容積移轉申請（如需增加容積）', color:'#A6402C', owner:'業務人員／建築師事務所'},
+  D:{name:'重建計畫擬訂與申請', color:'#8A5A3B', owner:'建築師事務所／業務人員'},
+  E:{name:'重建計畫審核與核准', color:'#6A6B3E', owner:'跑照／業務人員'},
+  F:{name:'建照前置準備', color:'#4B7A5D', owner:'建築師事務所'},
+  G:{name:'公會協審與平行分會', color:'#7A6A4B', owner:'建築師事務所／跑照人員'},
+  H:{name:'建照科複核與核准', color:'#3E5C4F', owner:'跑照／業務人員'}
+};
+
+const STEPS = [
+ {id:1, phase:'A', title:'確認建築物非屬歷史文化保存價值，且位於都市計畫範圍內', sub:[], dur:'', critical:false},
+ {id:2, phase:'A', title:'確認符合危老條例適用資格條件之一，並評估是否需申請容積移轉增加容積', sub:['經工務局通知限期拆除／逕予強制拆除，或評估有危險之虞','結構安全性能初步評估分數R＞60分','屋齡30年以上，30＜R≦60分且符合改善不具效益或未設昇降設備'], dur:'', critical:false},
+ {id:3, phase:'B', title:'取得逾半數建築物所有權人同意，委託共同供應契約機構辦理結構安全性能初步評估（初評）', sub:['逾半數所有權人同意書','推派申請代表人'], dur:'', critical:false},
+ {id:4, phase:'B', title:'辦理耐震能力初步評估（初評），取得評估分數R值', sub:[], dur:'', critical:false},
+ {id:5, phase:'B', title:'如30＜R≦60分，視個案需要辦理詳細評估（詳評）', sub:['委託詳評','取得詳評結果報告書'], dur:'', critical:false},
+ {id:6, phase:'C', title:'書面要件審查（一階），確認送出基地及接受基地要件', sub:[], dur:'', critical:false},
+ {id:7, phase:'C', title:'容積量體評定（二階），依評定原則計算可移入容積', sub:[], dur:'', critical:false},
+ {id:8, phase:'C', title:'送出基地地上物及相關權利清理', sub:['地上物清理','他項權利清理'], dur:'', critical:false},
+ {id:9, phase:'C', title:'完成送出基地所有權移轉登記，取得容積移轉許可證明', sub:[], dur:'', critical:true},
+ {id:10, phase:'D', title:'取得全體或法定比例所有權人同意，擬具重建計畫書', sub:['所有權人同意書造冊','重建計畫書'], dur:'', critical:false},
+ {id:11, phase:'D', title:'檢附重建計畫應備書件（含容積移轉許可證明，如適用）向都市更新處申請', sub:['重建計畫申請書','容積移轉許可證明（如需增加容積者，此件為必附文件）','相關切結書、簽證文件'], dur:'', critical:true},
+ {id:12, phase:'E', title:'主管機關受理，辦理重建計畫審核', sub:[], dur:'30日內完成審核（情形特殊得延長一次，最長再延30日）', critical:false},
+ {id:13, phase:'E', title:'審查有應補正事項者，限期補正', sub:['收到補正通知','完成補正'], dur:'', critical:false},
+ {id:14, phase:'E', title:'主管機關核准重建計畫，核發重建計畫核准函', sub:[], dur:'須已取得容積移轉許可證明（如適用）', critical:true},
+ {id:15, phase:'F', title:'依核准重建計畫整理建照應備書表', sub:['起造人名冊','設計人名冊','地號表','建築物概要表'], dur:'', critical:false},
+ {id:16, phase:'F', title:'備齊建築圖說、結構圖說、設備圖說等技術圖說', sub:['建築圖說','結構圖說、結構計算書','設備圖說'], dur:'', critical:false},
+ {id:17, phase:'G', title:'案件送新北市建築師公會，辦理掛號初審（要件審查）與技術審查', sub:[], dur:'', critical:false},
+ {id:18, phase:'G', title:'府內機關平行分會（消防局、都市計畫科等相關機關同步審查）', sub:[], dur:'', critical:false},
+ {id:19, phase:'G', title:'協審意見修正（如有），修正完成後轉送建照科', sub:['收到協審意見','完成圖說書件修正'], dur:'', critical:false},
+ {id:20, phase:'H', title:'建照科複核公會協審結果及各機關會辦意見', sub:[], dur:'', critical:false},
+ {id:21, phase:'H', title:'應改正案件通知修改圖說書件（如有）', sub:[], dur:'', critical:false},
+ {id:22, phase:'H', title:'承辦人陳核，審查符合規定者核准建造執照', sub:[], dur:'', critical:false},
+ {id:23, phase:'H', title:'完成掛號手續，核發建造執照正本', sub:[], dur:'', critical:false},
+];
+
+const STATUS_ORDER = ['not_started','in_progress','done','blocked'];
+const STATUS_META = {
+  not_started:{label:'未開始', color:'var(--grey)'},
+  in_progress:{label:'進行中', color:'var(--amber)'},
+  done:{label:'已完成', color:'var(--green)'},
+  blocked:{label:'卡關待處理', color:'var(--red)'}
+};
+
+const LOCAL_KEY = 'xinbei-weilao-progress-local-v1';
+const NAME_KEY  = 'xinbei-weilao-username';
+const POLL_MS = 5000;
+let state = null;
+let USER_NAME = '';
+const saveTimers = {};
+let pollTimer = null;
+
+/* ---------- 狀態物件 ---------- */
+function defaultState(){
+  const steps = {};
+  STEPS.forEach(s=>{
+    steps[s.id] = {status:'not_started', owner:'', target:'', actual:'', note:'', subs: s.sub.map(()=>false)};
+  });
+  return {steps, updatedAt:null, updatedBy:''};
+}
+
+function mergeStepData(id, src){
+  const s = STEPS.find(x=>x.id==id);
+  if(!s) return;
+  const base = state.steps[id];
+  base.status = src.status || base.status;
+  base.owner  = (src.owner  !== undefined) ? src.owner  : base.owner;
+  base.target = (src.target !== undefined) ? src.target : base.target;
+  base.actual = (src.actual !== undefined) ? src.actual : base.actual;
+  base.note   = (src.note   !== undefined) ? src.note   : base.note;
+  if(Array.isArray(src.subs)){
+    base.subs = s.sub.map((_,i)=> !!src.subs[i]);
+  }
+}
+
+/* ---------- 讀取（雲端 or 本機） ---------- */
+async function loadState(){
+  state = defaultState();
+  if(!GAS_URL){
+    try{
+      const raw = localStorage.getItem(LOCAL_KEY);
+      if(raw){
+        const parsed = JSON.parse(raw);
+        if(parsed.steps) Object.keys(parsed.steps).forEach(id=>{ if(state.steps[id]) mergeStepData(id, parsed.steps[id]); });
+        state.updatedAt = parsed.updatedAt || null;
+        state.updatedBy = parsed.updatedBy || '';
+      }
+    }catch(e){ /* 本機無資料 */ }
+    return;
+  }
+  try{
+    const res = await fetch(GAS_URL, {method:'GET'});
+    const data = await res.json();
+    if(data && data.ok && data.steps){
+      Object.keys(data.steps).forEach(id=>{ if(state.steps[id]) mergeStepData(id, data.steps[id]); });
+      state.updatedAt = data.updatedAt || null;
+      state.updatedBy = data.updatedBy || '';
+    }
+  }catch(e){ console.error('讀取雲端失敗，暫以本機顯示', e); }
+}
+
+/* ---------- 寫入（依單一步驟，避免互相覆蓋） ---------- */
+function saveStep(id){
+  state.updatedAt = new Date().toISOString();
+  state.updatedBy = USER_NAME;
+  updateLastUpdateBadge();
+
+  if(!GAS_URL){
+    try{ localStorage.setItem(LOCAL_KEY, JSON.stringify(state)); }catch(e){}
+    return;
+  }
+  clearTimeout(saveTimers[id]);
+  saveTimers[id] = setTimeout(()=>{
+    const s = STEPS.find(x=>x.id==id);
+    const st = state.steps[id];
+    const payload = {
+      action:'update', id:id, phase:s.phase, title:s.title,
+      status:st.status, owner:st.owner, target:st.target, actual:st.actual,
+      note:st.note, subs:st.subs, user: USER_NAME || '(未具名)'
+    };
+    // 用預設的 text/plain 送出（不加 headers），屬於「簡單請求」，不會觸發 CORS 預檢
+    fetch(GAS_URL, {method:'POST', body: JSON.stringify(payload)})
+      .then(r=>r.json())
+      .catch(e=>console.error('寫入雲端失敗', e));
+  }, 400);
+}
+
+/* ---------- 多人輪詢同步 ---------- */
+function startPolling(){
+  if(!GAS_URL) return;
+  clearInterval(pollTimer);
+  pollTimer = setInterval(refreshFromServer, POLL_MS);
+}
+async function refreshFromServer(){
+  try{
+    const res = await fetch(GAS_URL, {method:'GET'});
+    const data = await res.json();
+    if(!data || !data.ok || !data.steps) return;
+    applyServer(data);
+  }catch(e){ /* 忽略單次失敗，下次再試 */ }
+}
+function applyServer(data){
+  if(data.updatedAt) state.updatedAt = data.updatedAt;
+  state.updatedBy = data.updatedBy || state.updatedBy;
+  STEPS.forEach(s=>{
+    const srv = data.steps[s.id];
+    if(!srv) return;
+    const loc = state.steps[s.id];
+    // 狀態
+    if(srv.status && srv.status !== loc.status){
+      loc.status = srv.status;
+      renderStatusButton(s.id);
+      updateFlowChip(s.id);
+    }
+    // 文字欄位：只有在「該欄位沒被使用者聚焦編輯」時才覆蓋，避免打斷輸入
+    ['owner','target','actual','note'].forEach(f=>{
+      const input = document.querySelector(`[data-id="${s.id}"][data-f="${f}"]`);
+      if(input && document.activeElement !== input && srv[f] !== undefined && srv[f] !== loc[f]){
+        loc[f] = srv[f];
+        input.value = srv[f];
+      }
+    });
+    // 子項目勾選
+    if(Array.isArray(srv.subs)){
+      srv.subs.forEach((v,i)=>{
+        const cb = document.querySelector(`[data-id="${s.id}"][data-sub="${i}"]`);
+        if(cb && document.activeElement !== cb && loc.subs[i] !== !!v){
+          loc.subs[i] = !!v;
+          cb.checked = !!v;
+          const span = cb.nextElementSibling;
+          if(span) span.classList.toggle('checked', !!v);
+        }
+      });
+    }
+  });
+  renderSummary();
+  updateLastUpdateBadge();
+}
+
+/* ---------- 顯示 ---------- */
+function updateConnBadge(){
+  const el = document.getElementById('connBadge');
+  if(GAS_URL){ el.textContent = '雲端已連線'; el.className = 'badge online'; }
+  else { el.textContent = '本機模式（尚未連雲端）'; el.className = 'badge offline'; }
+}
+function updateLastUpdateBadge(){
+  const el = document.getElementById('lastUpdateBadge');
+  if(!state.updatedAt){ el.textContent = '尚未更新'; return; }
+  const d = new Date(state.updatedAt);
+  const pad = n=>String(n).padStart(2,'0');
+  const by = state.updatedBy ? `・${state.updatedBy}` : '';
+  el.textContent = `最後更新 ${pad(d.getMonth()+1)}/${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}${by}`;
+}
+function renderSummary(){
+  const done = STEPS.filter(s=>state.steps[s.id].status==='done').length;
+  const pct = Math.round(done/STEPS.length*100);
+  document.getElementById('pctLabel').textContent = pct+'%';
+  document.getElementById('barFill').style.width = pct+'%';
+}
+function cycleStatus(id){
+  const cur = state.steps[id].status;
+  const idx = STATUS_ORDER.indexOf(cur);
+  state.steps[id].status = STATUS_ORDER[(idx+1) % STATUS_ORDER.length];
+  saveStep(id);
+  renderSummary();
+  renderStatusButton(id);
+  updateFlowChip(id);
+}
+function renderStatusButton(id){
+  const btn = document.querySelector(`.status-btn[data-id="${id}"]`);
+  if(!btn) return;
+  const meta = STATUS_META[state.steps[id].status];
+  btn.textContent = meta.label;
+  btn.style.background = meta.color;
+}
+function updateFlowChip(id){
+  const chip = document.querySelector(`[data-flowchip="${id}"]`);
+  if(chip) chip.style.background = STATUS_META[state.steps[id].status].color;
+}
+
+function renderFlow(){
+  const track = document.getElementById('flowTrack');
+  track.innerHTML = '';
+  const phaseKeys = Object.keys(PHASES);
+  phaseKeys.forEach((pk, pIdx)=>{
+    const block = document.createElement('div');
+    block.className = 'phase-block';
+    block.style.setProperty('--phase-color', PHASES[pk].color);
+
+    const label = document.createElement('div');
+    label.className = 'phase-label';
+    label.style.setProperty('--phase-color', PHASES[pk].color);
+    label.textContent = `${pk}・${PHASES[pk].name}`;
+    block.appendChild(label);
+
+    const stepsWrap = document.createElement('div');
+    stepsWrap.className = 'phase-steps';
+
+    const stepsInPhase = STEPS.filter(s=>s.phase===pk);
+    stepsInPhase.forEach((s, sIdx)=>{
+      const node = document.createElement('div');
+      node.className = 'node' + (s.critical ? ' critical' : '');
+      node.style.setProperty('--phase-color', PHASES[pk].color);
+      node.onclick = ()=>{
+        const row = document.getElementById('step-'+s.id);
+        if(row){ row.open = true; row.scrollIntoView({behavior:'smooth', block:'center'}); }
+      };
+      node.innerHTML = `
+        <span class="num">${String(s.id).padStart(2,'0')}</span>
+        <span class="ttl">${s.title}</span>
+        ${s.dur ? `<span class="dur">${s.dur}</span>` : ''}
+        ${s.critical ? `<span class="critical-flag">⚠ 關鍵依存節點</span>` : ''}
+      `;
+      const chip = document.createElement('span');
+      chip.className = 'stchip';
+      chip.setAttribute('data-flowchip', s.id);
+      chip.style.background = STATUS_META[state.steps[s.id].status].color;
+      node.appendChild(chip);
+      stepsWrap.appendChild(node);
+
+      if(sIdx < stepsInPhase.length - 1){
+        const conn = document.createElement('div');
+        conn.className = 'connector';
+        conn.textContent = '→';
+        stepsWrap.appendChild(conn);
+      }
+    });
+
+    block.appendChild(stepsWrap);
+    track.appendChild(block);
+
+    if(pIdx < phaseKeys.length - 1){
+      const gap = document.createElement('div');
+      gap.className = 'connector phase-gap';
+      gap.textContent = '⇒';
+      track.appendChild(gap);
+    }
+  });
+}
+
+function renderChecklist(){
+  const wrap = document.getElementById('checklist');
+  wrap.innerHTML = '';
+  Object.keys(PHASES).forEach(pk=>{
+    const stepsInPhase = STEPS.filter(s=>s.phase===pk);
+    const section = document.createElement('div');
+    section.className = 'phase-section';
+    section.style.setProperty('--phase-color', PHASES[pk].color);
+
+    const header = document.createElement('div');
+    header.className = 'phase-header';
+    header.style.setProperty('--phase-color', PHASES[pk].color);
+    header.innerHTML = `
+      <span class="ph-code" style="background:${PHASES[pk].color}">${pk}</span>
+      <h2>${PHASES[pk].name}</h2>
+      ${PHASES[pk].owner ? `<span class="ph-owner">${PHASES[pk].owner}</span>` : ''}
+      <span class="ph-count">${stepsInPhase[0].id}–${stepsInPhase[stepsInPhase.length-1].id}</span>
+    `;
+    section.appendChild(header);
+
+    stepsInPhase.forEach(s=>{
+      const row = document.createElement('details');
+      row.className = 'step-row' + (s.critical ? ' critical' : '');
+      row.id = 'step-'+s.id;
+
+      const summary = document.createElement('summary');
+      summary.innerHTML = `
+        <span class="step-idx">${String(s.id).padStart(2,'0')}</span>
+        <span class="step-main">
+          <span class="step-title">${s.title}</span>
+          ${s.dur ? `<span class="step-dur">⏱ ${s.dur}</span>` : ''}
+          ${s.critical ? `<span class="step-flag">⚠ 關鍵依存節點：容積移轉須於重建計畫核准前完成</span>` : ''}
+        </span>
+      `;
+      const statusBtn = document.createElement('button');
+      statusBtn.className = 'status-btn';
+      statusBtn.type = 'button';
+      statusBtn.setAttribute('data-id', s.id);
+      statusBtn.onclick = (e)=>{ e.preventDefault(); e.stopPropagation(); cycleStatus(s.id); };
+      const meta = STATUS_META[state.steps[s.id].status];
+      statusBtn.textContent = meta.label;
+      statusBtn.style.background = meta.color;
+      summary.appendChild(statusBtn);
+      row.appendChild(summary);
+
+      const detail = document.createElement('div');
+      detail.className = 'step-detail';
+
+      if(s.sub.length){
+        const ul = document.createElement('ul');
+        ul.className = 'sub-list';
+        s.sub.forEach((txt, i)=>{
+          const li = document.createElement('li');
+          const cb = document.createElement('input');
+          cb.type = 'checkbox';
+          cb.setAttribute('data-id', s.id);
+          cb.setAttribute('data-sub', i);
+          cb.checked = !!state.steps[s.id].subs[i];
+          cb.onchange = ()=>{
+            state.steps[s.id].subs[i] = cb.checked;
+            span.classList.toggle('checked', cb.checked);
+            saveStep(s.id);
+          };
+          const span = document.createElement('span');
+          span.textContent = txt;
+          if(cb.checked) span.classList.add('checked');
+          li.appendChild(cb);
+          li.appendChild(span);
+          ul.appendChild(li);
+        });
+        detail.appendChild(ul);
+      }
+
+      const fields = document.createElement('div');
+      fields.className = 'fields';
+      fields.innerHTML = `
+        <div class="field">
+          <label>負責人</label>
+          <input type="text" data-id="${s.id}" data-f="owner" value="${escapeHtml(state.steps[s.id].owner)}" placeholder="評估機構 / 建築師 / 業務"/>
+        </div>
+        <div class="field">
+          <label>預定日期</label>
+          <input type="text" data-id="${s.id}" data-f="target" value="${escapeHtml(state.steps[s.id].target)}" placeholder="YYYY/MM"/>
+        </div>
+        <div class="field">
+          <label>實際完成日期</label>
+          <input type="text" data-id="${s.id}" data-f="actual" value="${escapeHtml(state.steps[s.id].actual)}" placeholder="YYYY/MM"/>
+        </div>
+        <div class="field" style="grid-column:1/-1">
+          <label>備註</label>
+          <textarea data-id="${s.id}" data-f="note" placeholder="評估分數、容積移轉許可證明取得日期、協審意見、補正原因等">${escapeHtml(state.steps[s.id].note)}</textarea>
+        </div>
+      `;
+      fields.querySelectorAll('[data-f]').forEach(input=>{
+        input.addEventListener('input', ()=>{
+          state.steps[s.id][input.getAttribute('data-f')] = input.value;
+          saveStep(s.id);
+        });
+      });
+      detail.appendChild(fields);
+
+      row.appendChild(detail);
+      section.appendChild(row);
+    });
+
+    wrap.appendChild(section);
+  });
+}
+
+function escapeHtml(str){
+  return (str||'').replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+
+/* ---------- 記錄者名稱 ---------- */
+function initUserName(){
+  const input = document.getElementById('userName');
+  try{ USER_NAME = localStorage.getItem(NAME_KEY) || ''; }catch(e){}
+  input.value = USER_NAME;
+  input.addEventListener('input', ()=>{
+    USER_NAME = input.value.trim();
+    try{ localStorage.setItem(NAME_KEY, USER_NAME); }catch(e){}
+  });
+}
+
+/* ---------- 重置 ---------- */
+document.getElementById('resetBtn').addEventListener('click', async ()=>{
+  if(!confirm('確定要重置所有人的進度資料嗎？此動作無法復原。')) return;
+  state = defaultState();
+  renderFlow();
+  renderChecklist();
+  renderSummary();
+  updateLastUpdateBadge();
+  if(!GAS_URL){
+    try{ localStorage.setItem(LOCAL_KEY, JSON.stringify(state)); }catch(e){}
+    return;
+  }
+  try{
+    await fetch(GAS_URL, {method:'POST', body: JSON.stringify({action:'reset', user: USER_NAME || '(未具名)'})});
+    await refreshFromServer();
+  }catch(e){ console.error('重置失敗', e); }
+});
+
+/* ---------- 啟動 ---------- */
+async function init(){
+  initUserName();
+  updateConnBadge();
+  await loadState();
+  renderFlow();
+  renderChecklist();
+  renderSummary();
+  updateLastUpdateBadge();
+  startPolling();
+}
+init();
+</script>
+</body>
+</html>
