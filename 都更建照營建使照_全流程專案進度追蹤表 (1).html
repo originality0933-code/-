@@ -1,0 +1,1457 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>都更・建照・營建・使照 全流程專案進度追蹤表</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@500;700;900&family=Noto+Sans+TC:wght@400;500;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#EDEAE1; --paper-deep:#E2DED2; --line:#CFC9B8; --ink:#232922; --ink-soft:#5B6155;
+    --navy:#2E4A63; --navy-deep:#1E3348; --amber:#B9791F; --amber-bg:#F3E3C6;
+    --green:#4B7A5D; --green-bg:#DCE6DD; --red:#A6402C; --red-bg:#EEDAD3;
+    --grey:#9B9581; --grey-bg:#DEDACB; --white:#FAF8F2;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{ background:var(--paper); color:var(--ink); font-family:'Noto Sans TC', sans-serif; line-height:1.55; padding:20px 14px 60px; }
+  .sheet{ max-width:1180px; margin:0 auto; }
+
+  .titleblock{
+    border:2px solid var(--ink); background:var(--white); padding:18px 22px;
+    display:flex; justify-content:space-between; align-items:flex-end; gap:16px; flex-wrap:wrap;
+    margin-bottom:14px; position:relative;
+  }
+  .titleblock::before{ content:""; position:absolute; inset:6px; border:1px solid var(--line); pointer-events:none; }
+  .tb-left h1{ font-family:'Noto Serif TC', serif; font-weight:900; font-size:22px; margin:0 0 6px; letter-spacing:.02em; }
+  .tb-left p{ margin:0; font-size:13px; color:var(--ink-soft); }
+  .tb-right{ text-align:right; font-family:'JetBrains Mono', monospace; font-size:12px; color:var(--ink-soft); }
+  .tb-right .badge{
+    display:inline-block; margin-top:6px; padding:3px 10px; background:var(--navy); color:var(--white);
+    font-family:'Noto Sans TC',sans-serif; font-size:12px; border-radius:2px;
+  }
+
+  .diff-note{
+    background:var(--white); border:1px solid var(--line); border-left:5px solid var(--amber);
+    padding:12px 16px; font-size:12.5px; color:var(--ink-soft); margin-bottom:10px; line-height:1.7;
+  }
+  .diff-note b{ color:var(--ink); }
+  .caveat-note{
+    background:var(--amber-bg); border:1px solid var(--amber);
+    padding:10px 16px; font-size:12px; color:var(--ink); margin-bottom:22px; line-height:1.7;
+  }
+
+  /* ---- 個案切換列 ---- */
+  .case-bar{
+    display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+    background:var(--white); border:1px solid var(--line); padding:12px 16px; margin-bottom:14px;
+  }
+  .case-bar .case-select-wrap{ display:flex; align-items:center; gap:8px; }
+  .case-bar label{ font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--ink-soft); letter-spacing:.03em; }
+  .case-bar select{
+    font-family:'Noto Sans TC',sans-serif; font-size:13px; color:var(--ink); background:var(--paper);
+    border:1px solid var(--line); border-radius:2px; padding:6px 10px; max-width:260px;
+  }
+  .case-bar select:focus{ outline:2px solid var(--navy); outline-offset:0; }
+  .case-btn{
+    font-family:'Noto Sans TC',sans-serif; font-size:12px; background:transparent;
+    border:1px solid var(--ink-soft); color:var(--ink-soft); padding:6px 12px; border-radius:2px; cursor:pointer;
+  }
+  .case-btn:hover{ border-color:var(--navy); color:var(--navy); }
+  .case-btn.danger:hover{ border-color:var(--red); color:var(--red); }
+  .case-btn.accent{ border-color:var(--navy); color:var(--navy); }
+  .case-btn.accent:hover{ background:var(--navy); color:var(--white); }
+  .case-hint{ font-size:11.5px; color:var(--ink-soft); width:100%; margin-top:2px; }
+  .storage-mode{
+    font-family:'JetBrains Mono', monospace; font-size:10.5px; color:var(--ink-soft);
+    background:var(--paper-deep); border:1px solid var(--line); padding:2px 8px; border-radius:2px; width:fit-content;
+  }
+
+  /* ---- 整體進度總覽 ---- */
+  .summary{
+    display:flex; gap:14px; align-items:center; background:var(--white);
+    border:1px solid var(--line); padding:14px 18px; margin-bottom:20px; flex-wrap:wrap;
+  }
+  .summary .pct{ font-family:'JetBrains Mono', monospace; font-size:30px; font-weight:700; color:var(--navy-deep); min-width:78px; }
+  .bar-track{ flex:1; min-width:180px; height:10px; background:var(--grey-bg); border-radius:6px; overflow:hidden; }
+  .bar-fill{ height:100%; background:linear-gradient(90deg, var(--navy), var(--green)); width:0%; transition:width .4s ease; }
+  .legend{ display:flex; gap:12px; font-size:12px; color:var(--ink-soft); flex-wrap:wrap; }
+  .legend span{ display:flex; align-items:center; gap:5px; }
+  .dot{ width:9px; height:9px; border-radius:50%; display:inline-block; }
+  .reset-btn{
+    margin-left:auto; font-family:'Noto Sans TC',sans-serif; font-size:12px; background:transparent;
+    border:1px solid var(--ink-soft); color:var(--ink-soft); padding:6px 12px; border-radius:2px; cursor:pointer;
+  }
+  .reset-btn:hover{ border-color:var(--red); color:var(--red); }
+
+  /* ---- 大階段分頁 ---- */
+  .mega-tabs{ display:flex; gap:8px; flex-wrap:wrap; margin-bottom:18px; }
+  .mega-tab{
+    flex:1; min-width:180px; text-align:left; cursor:pointer; border:1px solid var(--line); background:var(--white);
+    padding:10px 14px; border-radius:2px; font-family:'Noto Sans TC',sans-serif;
+  }
+  .mega-tab .mt-num{ font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--ink-soft); }
+  .mega-tab .mt-title{ display:block; font-size:13.5px; font-weight:700; color:var(--ink); margin:2px 0 4px; }
+  .mega-tab .mt-badge{ font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--ink-soft); }
+  .mega-tab.active{ border-color:var(--navy); border-width:2px; background:var(--paper-deep); }
+  .mega-tab:hover{ border-color:var(--navy); }
+
+  .mega-section{ display:none; }
+  .mega-section.active{ display:block; }
+  .mega-section-head{ display:flex; align-items:flex-end; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:4px; }
+  .mega-section-title{ font-family:'Noto Serif TC',serif; font-weight:900; font-size:19px; margin:0; color:var(--navy-deep); }
+  .mega-section-sub{ font-size:12px; color:var(--ink-soft); margin:2px 0 16px; }
+  .mega-reset-btn{
+    font-family:'Noto Sans TC',sans-serif; font-size:11.5px; background:transparent;
+    border:1px solid var(--ink-soft); color:var(--ink-soft); padding:5px 10px; border-radius:2px; cursor:pointer;
+  }
+  .mega-reset-btn:hover{ border-color:var(--red); color:var(--red); }
+
+  .flow-title{ font-family:'Noto Serif TC', serif; font-weight:700; font-size:15.5px; margin:0 0 12px; color:var(--navy-deep); }
+  .flow-wrap{ overflow-x:auto; padding-bottom:12px; margin-bottom:28px; -webkit-overflow-scrolling:touch; }
+  .flow-track{ display:flex; gap:0; min-width:max-content; padding:4px 2px 18px; }
+  .phase-block{ display:flex; flex-direction:column; padding:0 10px; position:relative; }
+  .phase-label{
+    font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--white); background:var(--phase-color, var(--navy));
+    padding:4px 10px; border-radius:2px 2px 0 0; display:inline-block; width:fit-content; margin-bottom:8px; letter-spacing:.03em;
+  }
+  .phase-steps{ display:flex; align-items:stretch; gap:0; }
+  .node{
+    background:var(--white); border:1.5px solid var(--phase-color, var(--navy)); border-radius:3px;
+    width:150px; padding:9px 10px 10px; font-size:11.5px; cursor:pointer;
+    transition:transform .15s ease, box-shadow .15s ease; position:relative;
+  }
+  .node.critical{ border-width:2.5px; box-shadow:0 0 0 2px var(--red-bg); }
+  .node:hover{ transform:translateY(-2px); box-shadow:0 3px 8px rgba(30,51,72,.18); }
+  .node .num{ font-family:'JetBrains Mono', monospace; font-weight:700; font-size:11px; color:var(--phase-color, var(--navy)); }
+  .node .ttl{ display:block; margin-top:3px; color:var(--ink); font-size:11.5px; line-height:1.35; min-height:44px; }
+  .node .dur{ display:block; margin-top:6px; font-family:'JetBrains Mono', monospace; font-size:10px; color:var(--amber); font-weight:700; }
+  .node .critical-flag{ display:block; margin-top:4px; font-size:9.5px; font-weight:700; color:var(--red); }
+  .node .stchip{ position:absolute; top:-8px; right:-6px; width:16px; height:16px; border-radius:50%; border:2px solid var(--white); }
+  .connector{ width:20px; display:flex; align-items:center; justify-content:center; color:var(--ink-soft); font-size:15px; flex-shrink:0; }
+  .phase-gap{ width:26px; flex-shrink:0; }
+
+  .phase-section{ margin-bottom:22px; border:1px solid var(--line); background:var(--white); }
+  .phase-header{ padding:12px 16px; display:flex; align-items:center; gap:10px; border-left:6px solid var(--phase-color, var(--navy)); background:var(--paper-deep); }
+  .phase-header h2{ font-family:'Noto Serif TC', serif; font-size:15.5px; margin:0; color:var(--navy-deep); }
+  .phase-header .ph-code{
+    font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--white);
+    background:var(--phase-color, var(--navy)); padding:2px 8px; border-radius:2px;
+  }
+  .phase-header .ph-count{ margin-left:auto; font-family:'JetBrains Mono', monospace; font-size:12px; color:var(--ink-soft); }
+  .phase-header .ph-owner{
+    font-family:'Noto Sans TC',sans-serif; font-size:11px; color:var(--white);
+    background:var(--ink-soft); padding:2px 8px; border-radius:2px;
+  }
+
+  .step-row{ border-top:1px solid var(--line); }
+  .step-row.critical{ background:var(--red-bg); }
+  .step-row summary{ list-style:none; cursor:pointer; padding:12px 16px; display:flex; align-items:flex-start; gap:12px; }
+  .step-row summary::-webkit-details-marker{ display:none; }
+  .step-row summary::before{ content:"›"; font-size:16px; color:var(--ink-soft); transition:transform .15s ease; line-height:1.4; }
+  .step-row[open] summary::before{ transform:rotate(90deg); }
+  .step-idx{ font-family:'JetBrains Mono', monospace; font-weight:700; font-size:13px; color:var(--ink-soft); width:22px; flex-shrink:0; padding-top:1px; }
+  .step-main{ flex:1; min-width:0; }
+  .step-title{ font-size:14px; font-weight:500; color:var(--ink); }
+  .step-dur{ font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--amber); margin-top:3px; }
+  .step-flag{ display:block; font-size:11px; font-weight:700; color:var(--red); margin-top:4px; }
+  .status-btn{
+    font-family:'Noto Sans TC',sans-serif; font-size:12px; font-weight:700; border:none;
+    border-radius:3px; padding:6px 12px; cursor:pointer; white-space:nowrap; flex-shrink:0; color:var(--white);
+  }
+
+  .step-detail{ padding:0 16px 16px 50px; }
+  .sub-list{ margin:0 0 12px; padding:0; list-style:none; }
+  .sub-list li{ display:flex; align-items:flex-start; gap:8px; font-size:13px; color:var(--ink-soft); margin-bottom:6px; }
+  .sub-list input[type=checkbox]{ margin-top:3px; accent-color:var(--navy); width:14px; height:14px; flex-shrink:0; }
+  .sub-list .checked{ text-decoration:line-through; color:var(--grey); }
+
+  .fields{ display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:10px; margin-top:6px; }
+  .field label{ display:block; font-family:'JetBrains Mono', monospace; font-size:10px; color:var(--ink-soft); margin-bottom:3px; letter-spacing:.03em; }
+  .field input, .field textarea{
+    width:100%; border:1px solid var(--line); background:var(--paper); padding:6px 8px;
+    font-family:'Noto Sans TC',sans-serif; font-size:12.5px; color:var(--ink); border-radius:2px;
+  }
+  .field textarea{ resize:vertical; min-height:34px; }
+  .field input:focus, .field textarea:focus{ outline:2px solid var(--navy); outline-offset:0; }
+
+  .meeting-log{ margin:2px 0 14px; }
+  .meeting-log-title{ font-family:'JetBrains Mono', monospace; font-size:10.5px; color:var(--ink-soft); letter-spacing:.03em; margin-bottom:6px; }
+  .meeting-row{
+    display:flex; gap:8px; align-items:flex-end; flex-wrap:wrap;
+    background:var(--paper); border:1px solid var(--line); border-radius:3px; padding:8px; margin-bottom:8px;
+  }
+  .meeting-row .mf{ flex:1 1 120px; min-width:100px; }
+  .meeting-row .mf.mf-note{ flex:2 1 200px; }
+  .meeting-row .mf label{ display:block; font-family:'JetBrains Mono', monospace; font-size:9.5px; color:var(--ink-soft); margin-bottom:3px; }
+  .meeting-row .mf input{
+    width:100%; border:1px solid var(--line); background:var(--white); padding:5px 7px;
+    font-family:'Noto Sans TC',sans-serif; font-size:12px; color:var(--ink); border-radius:2px;
+  }
+  .meeting-seq{
+    font-family:'JetBrains Mono', monospace; font-size:11px; font-weight:700; color:var(--white);
+    background:var(--phase-color, var(--navy)); padding:5px 9px; border-radius:2px; flex-shrink:0; align-self:center;
+  }
+  .meeting-del{
+    font-family:'Noto Sans TC',sans-serif; font-size:11px; background:transparent; flex-shrink:0;
+    border:1px solid var(--red); color:var(--red); padding:5px 10px; border-radius:2px; cursor:pointer; align-self:center;
+  }
+  .meeting-del:hover{ background:var(--red); color:var(--white); }
+  .meeting-add-btn{
+    font-family:'Noto Sans TC',sans-serif; font-size:12px; background:transparent;
+    border:1px dashed var(--navy); color:var(--navy); padding:6px 12px; border-radius:2px; cursor:pointer;
+  }
+  .meeting-add-btn:hover{ background:var(--navy); color:var(--white); }
+  .meeting-empty{ font-size:12px; color:var(--ink-soft); margin-bottom:8px; }
+
+  footer.note{ font-size:11.5px; color:var(--ink-soft); text-align:center; margin-top:26px; line-height:1.7; }
+
+  .print-only{ display:none; }
+  @media print{
+    *{ -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important; color-adjust:exact !important; }
+    body{ padding:0; background:#fff; }
+    .case-bar, .reset-btn, .mega-tabs, .mega-reset-btn, .flow-title, .flow-wrap, footer.note{ display:none !important; }
+    .print-only{ display:block; margin-bottom:14px; }
+    .print-only h1{ font-family:'Noto Serif TC', serif; font-size:18px; margin:0 0 4px; }
+    .print-only .print-meta{ font-family:'JetBrains Mono', monospace; font-size:11px; color:#444; }
+    .mega-section{ display:block !important; break-before:page; }
+    .mega-section:first-of-type{ break-before:auto; }
+    .step-row summary::before{ display:none; }
+    .step-row{ break-inside:avoid; }
+    .phase-section{ break-inside:avoid; }
+    .field input, .field textarea{ border:1px solid #999; }
+  }
+
+  @media (max-width:640px){
+    .titleblock{ flex-direction:column; align-items:flex-start; }
+    .tb-right{ text-align:left; }
+    .node{ width:120px; }
+  }
+</style>
+</head>
+<body>
+<div class="sheet">
+
+  <div class="titleblock">
+    <div class="tb-left">
+      <h1>都更・建照・營建・使照 全流程專案進度追蹤表</h1>
+      <p>整合「都市更新事業」「建照流程」「營建工程管理」「使照流程」四份追蹤表，依序管理同一開發案件的完整生命週期</p>
+    </div>
+    <div class="tb-right">
+      一、都更整合 → 二、建照流程 → 三、營建工程 → 四、使照流程<br/>
+      <span class="badge" id="lastUpdateBadge">尚未更新</span>
+    </div>
+  </div>
+
+  <div class="print-only" id="printOnlyHeader">
+    <h1 id="printCaseTitle">都更・建照・營建・使照 全流程專案進度追蹤表</h1>
+    <div class="print-meta" id="printCaseDate"></div>
+  </div>
+
+  <div class="case-bar" id="caseBar">
+    <div class="case-select-wrap">
+      <label for="caseSelect">目前個案／專案</label>
+      <select id="caseSelect"></select>
+    </div>
+    <button class="case-btn" id="newCaseBtn">＋ 新增個案</button>
+    <button class="case-btn" id="renameCaseBtn">重新命名</button>
+    <button class="case-btn danger" id="deleteCaseBtn">刪除個案</button>
+    <button class="case-btn accent" id="shareBtn">📤 分享／匯出備份</button>
+    <button class="case-btn" id="importBtn">⭱ 匯入備份</button>
+    <button class="case-btn accent" id="pdfBtn">🖨 匯出彩色PDF（全部四階段）</button>
+    <button class="case-btn accent" id="sheetBtn">🔗 連接 Google Sheet</button>
+    <button class="case-btn" id="sheetGuideBtn">📄 下載設定教學</button>
+    <button class="case-btn" id="sheetSyncBtn" style="display:none;">🔄 立即同步</button>
+    <input type="file" id="importFileInput" accept="application/json" style="display:none">
+    <span class="storage-mode" id="storageModeLabel">儲存模式：偵測中…</span>
+    <span class="storage-mode" id="sheetStatusLabel">Google Sheet：未連接</span>
+    <div class="case-hint">每個「個案／專案」各自獨立記錄一、二、三、四共四大階段的完整進度；切換上方選單即可查看或填寫不同案件。「分享／匯出備份」可在手機上直接透過 LINE／訊息／郵件傳送備份檔；「匯入備份」可在其他裝置還原。「匯出彩色PDF」會一次列印四大階段並保留狀態顏色。「連接 Google Sheet」可讓多人透過同一份 Google 試算表即時同步所有個案資料（需先部署 Apps Script，詳見下載的設定說明檔）。</div>
+    <div class="case-hint" id="storageWarning" style="display:none; color:var(--red); font-weight:700;">⚠️ 偵測到目前瀏覽器無法自動儲存（可能為隱私瀏覽模式），請改用一般模式，或改用 Chrome／Edge／Safari 開啟，否則填寫內容可能無法保存，建議隨時按「分享／匯出備份」保存進度。</div>
+  </div>
+
+  <div class="diff-note">
+    <b>四大階段銜接說明：</b>本表將開發案件全生命週期串成一、都市更新事業（事業概要→事業計畫擬訂〈含實施者自辦公聽會〉→報核→審議公展聽證→核定發布→權利變換執行與拆遷）→ 二、建照流程 → 三、營建工程管理 → 四、使照流程，共四大階段依序管理。都更事業完成權利變換執行、拆遷及申請拆除執照後，即銜接至「二、建照流程」申請建造執照。<br/>
+    <b>使用方式：</b>點選下方分頁切換四大階段；每個步驟可點擊右側狀態鈕循環切換「未開始→進行中→已完成→卡關待處理」，展開步驟可填寫負責人、預定與實際完成日期及備註。<br/>
+    <b>多人同步：</b>點「🔗 連接 Google Sheet」並貼上部署好的 Apps Script 網址後，所有個案資料會同時寫入同一份 Google 試算表，團隊成員各自在自己的瀏覽器開啟本頁面、連接同一個試算表網址，即可看到彼此更新的進度（需先完成一次性設定，詳見下載的設定說明）。
+  </div>
+  <div class="caveat-note">
+    ⚠️ 都市更新事業概要／事業計畫報核期限、公展、聽證及審議時程，均會因個案異議處理、都更會排定會議等因素而變動；各階段法定審查天數、程序及應備書件僅供參考整理，實際仍請以都市更新處、工務局、建管處及建築師公會最新公告為準；使用執照銜接流程請依所在縣市對應之使照追蹤表辦理。
+  </div>
+
+  <div class="summary">
+    <div class="pct" id="pctLabel">0%</div>
+    <div class="bar-track"><div class="bar-fill" id="barFill"></div></div>
+    <div class="legend">
+      <span><i class="dot" style="background:var(--grey)"></i>未開始</span>
+      <span><i class="dot" style="background:var(--amber)"></i>進行中</span>
+      <span><i class="dot" style="background:var(--green)"></i>已完成</span>
+      <span><i class="dot" style="background:var(--red)"></i>卡關待處理</span>
+    </div>
+    <button class="reset-btn" id="resetBtn">重置整個個案（全部四階段）</button>
+  </div>
+
+  <div class="mega-tabs" id="megaTabs"></div>
+
+  <div id="megaSections"></div>
+
+  <footer class="note">
+    此進度表可依「個案／專案」分開建立與填寫，涵蓋都更整合、建照、營建、使照共四大階段；資料會自動儲存——在 Claude.ai 內開啟時同步至雲端供團隊共用，若下載後以瀏覽器直接開啟則自動改存於該瀏覽器（本機）。建議定期使用「分享／匯出備份」保存或傳送檔案（手機可直接分享至 LINE、訊息、郵件等 App），需要在其他裝置或與同事共用時，用「匯入備份」還原即可；也可用「匯出彩色PDF」將目前個案四大階段含狀態顏色一次存成 PDF 留存。若需多人即時共同編輯同一份資料，可透過「連接 Google Sheet」串接團隊共用的 Google 試算表。<br/>
+    內容依都市更新條例、都市危險及老舊建築物加速重建條例、建築法及各地方政府建管處／都市更新處公告資料整理，流程與時程僅供參考，實際依承辦機關公告及個案狀況調整。
+  </footer>
+</div>
+
+<script>
+const STATUS_ORDER = ['not_started','in_progress','done','blocked'];
+const STATUS_META = {
+  not_started:{label:'未開始', color:'var(--grey)'},
+  in_progress:{label:'進行中', color:'var(--amber)'},
+  done:{label:'已完成', color:'var(--green)'},
+  blocked:{label:'卡關待處理', color:'var(--red)'}
+};
+
+const MEGA = [
+  {
+    id:'M1', num:'一', title:'都市更新事業', source:'新北市都市更新進度追蹤表',
+    PHASES:{
+      A:{name:'事業概要', color:'#2E4A63', owner:''},
+      B:{name:'事業計畫擬訂', color:'#4B7A88', owner:''},
+      C:{name:'審查、公展與聽證', color:'#B9791F', owner:'跑照／都更承辦人員'},
+      D:{name:'核定發布實施', color:'#6A6B3E', owner:''},
+      E:{name:'權利變換執行與拆遷', color:'#4B7A5D', owner:'營造／業務人員'}
+    },
+    STEPS:[
+      {id:1, phase:'A', title:'劃定都市更新單元（自行劃定或依政府公告更新地區範圍）', sub:['確認基地是否位於公告更新地區','如自行劃定，核對新北市自行劃定都市更新單元檢核表'], dur:''},
+      {id:2, phase:'A', title:'擬訂都市更新事業概要，取得法定比例土地及建物所有權人同意', sub:['擬訂事業概要書','取得同意書（土地及合法建物所有權人）'], dur:''},
+      {id:3, phase:'A', title:'申請核准都市更新事業概要（送新北市政府都市更新處）', sub:[], dur:''},
+      {id:4, phase:'A', title:'都更會審議事業概要並核准；事業計畫報核期限以1年為原則', sub:[], dur:'報核期限1年，特殊情況最長延至2年'},
+      {id:5, phase:'B', title:'擬訂都市更新事業計畫（及權利變換計畫，如採權利變換方式實施）', sub:['都市更新事業計畫書','權利變換計畫書（如適用）'], dur:''},
+      {id:6, phase:'B', title:'取得事業計畫階段法定比例土地及建物所有權人同意', sub:['取得同意書並完成造冊'], dur:''},
+      {id:7, phase:'B', title:'實施者自辦公聽會，聽取民眾意見（依都市更新條例第19條，應於事業計畫報核前辦理）', sub:['公聽會日期、地點刊登新聞紙或新聞電子報，並通知更新單元內土地、合法建物所有權人及他項權利人','邀集有關機關代表、學者專家、當地居民代表參加（施行細則第6條）','舉辦自辦公聽會，說明事業計畫內容並聽取民眾意見','作成公聽會紀錄，併同意見回應併入事業計畫報核書件'], dur:'應於申請事業計畫報核前完成，與事業概要階段之公聽會分開辦理'},
+      {id:8, phase:'B', title:'申請都市更新事業計畫報核', sub:['備齊土地及建物謄本（申請當日）','檢附建築線指示（定）圖（如需）','檢附自辦公聽會紀錄及意見處理結果'], dur:'書圖等補正：第一次60日／第二次30日；建築線圖第一次15日'},
+      {id:9, phase:'C', title:'主管機關受理，辦理公開展覽及公辦公聽會', sub:['公開展覽公告','公辦公聽會'], dur:'公展法定不得少於30日'},
+      {id:10, phase:'C', title:'公展期間人民陳情意見處理及答復', sub:[], dur:''},
+      {id:11, phase:'C', title:'都更會專案小組審查（必要時多次審查會議）', sub:['第一次專案小組審查','後續審查（如有）'], dur:'會議紀錄送達翌日起90日內修正報核', meetingLog:true, meetingLabel:'專案小組審查會議'},
+      {id:12, phase:'C', title:'權利變換計畫依法舉辦聽證程序', sub:['聽證公告','舉辦聽證','聽證紀錄作成'], dur:''},
+      {id:13, phase:'D', title:'都更會大會決議通過', sub:[], dur:''},
+      {id:14, phase:'D', title:'陳報核定，公告發布實施都市更新事業計畫（及權利變換計畫）', sub:['事業計畫核定發布','權利變換計畫核定發布（如適用）'], dur:''},
+      {id:15, phase:'E', title:'權利變換啟動：地上物拆遷、他項權利清償或提存，申請拆除執照', sub:['地上物拆遷協議','他項權利清償或提存','申請拆除執照'], dur:''}
+    ]
+  },
+  {
+    id:'M2', num:'二', title:'建照流程', source:'新北市建照流程進度追蹤表',
+    PHASES:{
+      A:{name:'前置準備', color:'#2E4A63', owner:''},
+      B:{name:'公會協審', color:'#B9791F', owner:'建築師事務所／跑照人員'},
+      C:{name:'府內機關平行分會', color:'#8A5A3B', owner:'跑照／業務人員'},
+      D:{name:'建照科複核與核准', color:'#4B7A5D', owner:'跑照／業務人員'}
+    },
+    STEPS:[
+      {id:1, phase:'A', title:'備齊起造人名冊、設計人名冊、地號表、建築物概要表等應備書表', sub:['起造人名冊','設計人名冊','地號表','建築物概要表'], dur:''},
+      {id:2, phase:'A', title:'備齊建築圖說、結構圖說、設備圖說、建築執照相關簽證技師名單、建築物結構與設備專業技師簽證報告等技術文件', sub:['建築圖說','結構圖說、結構計算書','設備圖說','建築執照相關簽證技師名單','建築物結構與設備專業技師簽證報告'], dur:'參考約3天／受託公會'},
+      {id:3, phase:'B', title:'案件送新北市建築師公會（受託審查機構）辦理掛號初審（要件審查）', sub:[], dur:''},
+      {id:4, phase:'B', title:'公會辦理技術審查（含一般規定項目、加強山坡地建築管理與技術規範等）', sub:['一般規定項目審查表','山坡地雜或雜併建照申請案加強查核表（如適用）','新北市非位於管制事項簽證表（如適用）'], dur:''},
+      {id:5, phase:'B', title:'審查有應補正事項者，依公會協審意見修正圖說書件', sub:['收到協審意見','完成圖說書件修正'], dur:''},
+      {id:6, phase:'C', title:'府內機關平行分會：消防局、都市計畫科、地政、水利等相關機關同步審查', sub:['消防局','都市計畫科','地政單位','水利／下水道等相關單位'], dur:''},
+      {id:7, phase:'C', title:'各機關會辦意見彙整，如有不符規定事項，需限期改善', sub:[], dur:''},
+      {id:8, phase:'D', title:'工務局建照科複核公會協審結果及各機關會辦意見', sub:[], dur:''},
+      {id:9, phase:'D', title:'承辦人陳核，審查符合規定者核准建造執照', sub:[], dur:''},
+      {id:10, phase:'D', title:'完成掛號手續，核發建造執照正本', sub:[], dur:''}
+    ]
+  },
+  {
+    id:'M3', num:'三', title:'營建工程管理', source:'營建工程管理進度追蹤表',
+    PHASES:{
+      A:{name:'行政作業（開工前置）', color:'#2E4A63', owner:'業務／跑照人員'},
+      B:{name:'假設工程', color:'#6A6B3E', owner:'工地主任'},
+      C:{name:'擋土工程', color:'#B9791F', owner:'工地主任／監造建築師'},
+      D:{name:'地下室工程', color:'#8A5A3B', owner:'工地主任／監造建築師'},
+      E:{name:'結構體工程（地上層）', color:'#7A6A4B', owner:'工地主任／監造建築師'},
+      F:{name:'上樑', color:'#A6402C', owner:'工地主任'},
+      G:{name:'外部飾裝與竣工整理', color:'#3E5C4F', owner:'工地主任'},
+      H:{name:'取得使用執照', color:'#4B7A5D', owner:'業務／跑照人員'}
+    },
+    STEPS:[
+      {id:1, phase:'A', title:'取得建造執照核准後，辦理開工備查', sub:['監造人備查','承造人備查','專任工程人員備查'], dur:''},
+      {id:2, phase:'A', title:'準備建築工程必須勘驗部分申報表及各項制式表單', sub:['建築工程必須勘驗部分申報表','建築物監造（監督、查核）報告表','起造人管理查核表','承造人施工自主檢查表'], dur:''},
+      {id:3, phase:'A', title:'辦理施工圍籬、工地簡介牌設置及公共安全相關申報', sub:['登革熱病媒蚊孳生源自主檢查表','工地簡介牌'], dur:''},
+      {id:4, phase:'B', title:'基地圍籬、安全措施架設', sub:[], dur:''},
+      {id:5, phase:'B', title:'放樣勘驗：建築物放樣後，挖掘基礎土方前', sub:['建築線經查核與指示（定）圖相符','核准圖使用基地經查核與複丈尺寸相符','拆除舊有房屋安全措施與計畫相符（如適用）'], dur:''},
+      {id:6, phase:'C', title:'依地質條件及開挖深度選定擋土設施工法（連續壁、鋼板樁、排樁等）', sub:[], dur:''},
+      {id:7, phase:'C', title:'擋土設施施工及支撐系統設置', sub:['擋土設施施工','支撐系統設置','鄰房鄰地保護措施（如需）'], dur:''},
+      {id:8, phase:'C', title:'開挖監測系統設置（沉陷、位移等監測，依施工計畫）', sub:[], dur:''},
+      {id:9, phase:'D', title:'基礎土方開挖', sub:[], dur:''},
+      {id:10, phase:'D', title:'基礎勘驗：土方挖掘後、澆置混凝土前（RC構造需配筋完畢，如有基樁需完成施工）', sub:[], dur:''},
+      {id:11, phase:'D', title:'地下室各層樓板配筋完畢後、澆置混凝土前，逐層申報勘驗', sub:[], dur:''},
+      {id:12, phase:'D', title:'地下室最後一層併同基礎勘驗申報（依常見實務作法）', sub:[], dur:''},
+      {id:13, phase:'E', title:'地上各層樓板配筋（骨）完畢後、澆置混凝土前，逐層申報勘驗', sub:[], dur:''},
+      {id:14, phase:'E', title:'鋼骨勘驗（如為鋼骨構造）：結構組立完成後，作防火覆蓋前', sub:[], dur:''},
+      {id:15, phase:'F', title:'結構體封頂（最高樓層樓板完成），辦理上樑儀式', sub:[], dur:''},
+      {id:16, phase:'F', title:'屋架勘驗（如適用）：屋架豎立後，屋面施工前', sub:[], dur:''},
+      {id:17, phase:'G', title:'外牆飾材、門窗玻璃裝設', sub:[], dur:''},
+      {id:18, phase:'G', title:'室內隔間、公共設施及主要設備裝設施工', sub:['室內隔間','昇降設備','機電、給排水等主要設備'], dur:''},
+      {id:19, phase:'G', title:'基地綠化、法定空地及開放空間整理，並拍攝綠化照片', sub:[], dur:''},
+      {id:20, phase:'G', title:'公共設施修復、施工圍籬鷹架等拆除復原', sub:['公共設施已修復完成','圍籬、遮板、鷹架、工棚拆除'], dur:''},
+      {id:21, phase:'H', title:'竣工勘驗：主要設備、主要構造及室內隔間完竣後，申請使用執照前', sub:[], dur:''},
+      {id:22, phase:'H', title:'依所在縣市使用執照申請流程辦理，銜接對應之使照追蹤表', sub:['臺北市使照流程進度追蹤表','新北市使照流程進度追蹤表','新竹縣竹北市使照流程進度追蹤表'], dur:''}
+    ]
+  },
+  {
+    id:'M4', num:'四', title:'使照流程', source:'使照流程進度追蹤表（新北市）',
+    PHASES:{
+      A:{name:'前置準備', color:'#2E4A63'},
+      B:{name:'竣工勘驗', color:'#4B7A88'},
+      C:{name:'使照掛號準備', color:'#6A6B3E'},
+      D:{name:'使照會勘', color:'#B9791F'},
+      E:{name:'審圖階段', color:'#8A5A3B'},
+      F:{name:'長官核准', color:'#6B4A6B'},
+      G:{name:'完成領照', color:'#4B7A5D'}
+    },
+    STEPS:[
+      {id:1, phase:'A', title:'提供建築、結構外審、都審相關原核准圖說及報告書', sub:[], dur:''},
+      {id:2, phase:'A', title:'取得門牌初編', sub:['準備竣工勘驗及使照申請表單'], dur:''},
+      {id:3, phase:'A', title:'修改竣工圖', sub:['最新建築核准圖與結構外審核准圖核對是否相符','差異處須確認現場依建築或依結構施作','加注使照應標注項目，詳自檢表'], dur:''},
+      {id:4, phase:'A', title:'使照併案修正竣工圖，須先送公會審查', sub:[], dur:'約 3 週'},
+      {id:5, phase:'B', title:'竣工勘驗掛號', sub:['竣工照片拍攝完成（現場完成度須接近交屋階段）','混凝土試驗報告','外單位掛號文號及日期（照片或截圖）'], dur:'約 3-5 天'},
+      {id:6, phase:'B', title:'竣工勘驗核准', sub:[], dur:''},
+      {id:7, phase:'C', title:'收集使照應提供材料證明文件、外單位核准公文及所有應備文件（詳使照書件材證資料列管表）', sub:['材料證明文件','外管線單位核准','竣工照片拍攝完成（現場完成度須接近交屋階段）'], dur:'使照預審 約 1-2 天'},
+      {id:8, phase:'C', title:'使用執照掛號（現場完成度須接近交屋階段）', sub:[], dur:'當天跟承辦約時間，一般約 7-10 天後會勘'},
+      {id:9, phase:'D', title:'使照會勘前預演', sub:['提前檢查現場缺失','讓現場階段人員熟悉使照檢查項目及人員分組（營造＋工務＋跑照）'], dur:''},
+      {id:10, phase:'D', title:'使照會勘', sub:['由工務局、區公所、養工處、水利局及無障礙協會等聯合會勘'], dur:''},
+      {id:11, phase:'D', title:'使照會勘缺失改善', sub:['缺失項目需拍攝改善前、中、後照片','須製作缺失改善報告'], dur:''},
+      {id:12, phase:'E', title:'第一次審圖', sub:['材料證明文件','竣工照片','竣工圖核對最新建照圖、結構圖','外單位承諾事項'], dur:''},
+      {id:13, phase:'E', title:'第一次審圖意見改善', sub:['確認改善完成時間'], dur:''},
+      {id:14, phase:'E', title:'第二次審圖', sub:['第一次審圖意見改善完成','第一次未審完之資料、圖說、照片、外單位，接續審查'], dur:''},
+      {id:15, phase:'E', title:'第三次審圖（若無則免）', sub:['全案5條缺失內，可將案件簽呈長官審查'], dur:''},
+      {id:16, phase:'F', title:'各長官列意見（初核第一輪）', sub:['股長（7樓以下）','正工程司（8樓-11樓）','科長（12樓-15樓）','副總工（16樓以上）'], dur:''},
+      {id:17, phase:'F', title:'各長官意見限期改善完成', sub:[], dur:''},
+      {id:18, phase:'F', title:'使照複核（複核第二輪）', sub:['股長','正工程司','科長','副總工'], dur:''},
+      {id:19, phase:'F', title:'使照核准', sub:[], dur:''},
+      {id:20, phase:'G', title:'使照副本製作及核對', sub:[], dur:''},
+      {id:21, phase:'G', title:'領使照', sub:[], dur:''}
+    ]
+  }
+];
+
+// ---- 個案（專案）與混合式儲存層 ----
+const CASES_KEY = 'quanliucheng-cases-v1';
+const CURRENT_CASE_KEY = 'quanliucheng-current-case-v1';
+function progressKey(caseId){ return 'quanliucheng-progress-v1:'+caseId; }
+function genCaseId(){ return 'case_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,7); }
+
+const hasCloudStorage = (typeof window.storage === 'object' && window.storage !== null && typeof window.storage.get === 'function');
+function isLocalStorageAvailable(){
+  try{
+    const t = '__storage_test__';
+    localStorage.setItem(t, t);
+    localStorage.removeItem(t);
+    return true;
+  }catch(e){ return false; }
+}
+const Store = {
+  mode: hasCloudStorage ? 'cloud' : (isLocalStorageAvailable() ? 'local' : 'none'),
+  async get(key){
+    if(this.mode === 'cloud'){ return await window.storage.get(key, true); }
+    if(this.mode === 'local'){
+      const raw = localStorage.getItem(key);
+      return raw === null ? null : {key, value: raw};
+    }
+    return null;
+  },
+  async set(key, value){
+    if(this.mode === 'cloud'){ return await window.storage.set(key, value, true); }
+    if(this.mode === 'local'){ localStorage.setItem(key, value); return {key, value}; }
+    throw new Error('無可用的儲存方式');
+  },
+  async delete(key){
+    if(this.mode === 'cloud'){ return await window.storage.delete(key, true); }
+    if(this.mode === 'local'){ localStorage.removeItem(key); return {key, deleted:true}; }
+    return null;
+  }
+};
+
+let cases = [];
+let currentCaseId = null;
+let state = null;
+let activeMegaId = MEGA[0].id;
+
+// ---- Google Sheet 同步層（選用，供多人跨裝置即時共同編輯）----
+const SHEET_URL_KEY = 'quanliucheng-sheet-url';
+let sheetUrl = null;
+try{ sheetUrl = localStorage.getItem(SHEET_URL_KEY) || null; }catch(e){ sheetUrl = null; }
+let sheetLastSyncAt = null;
+
+function updateSheetStatusLabel(s){
+  const el = document.getElementById('sheetStatusLabel');
+  const syncBtn = document.getElementById('sheetSyncBtn');
+  if(!el) return;
+  if(!sheetUrl){
+    el.textContent = 'Google Sheet：未連接';
+    if(syncBtn) syncBtn.style.display = 'none';
+    return;
+  }
+  if(syncBtn) syncBtn.style.display = '';
+  if(s === 'syncing'){ el.textContent = '🔄 Google Sheet：同步中…'; return; }
+  if(s === 'error'){ el.textContent = '⚠️ Google Sheet：同步失敗（暫用本機資料）'; return; }
+  const t = sheetLastSyncAt ? new Date(sheetLastSyncAt).toLocaleTimeString('zh-TW',{hour:'2-digit',minute:'2-digit'}) : '尚未';
+  el.textContent = `✅ Google Sheet：已連接（最後同步 ${t}）`;
+}
+
+const SheetStore = {
+  async get(key){
+    if(!sheetUrl) return null;
+    const res = await fetch(sheetUrl + '?key=' + encodeURIComponent(key));
+    if(!res.ok) throw new Error('Sheet 讀取失敗：HTTP '+res.status);
+    const data = await res.json();
+    return (data && data.value !== null && data.value !== undefined) ? {key, value: data.value} : null;
+  },
+  async set(key, value){
+    if(!sheetUrl) return null;
+    const res = await fetch(sheetUrl, {
+      method:'POST',
+      headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body: JSON.stringify({action:'set', key, value})
+    });
+    if(!res.ok) throw new Error('Sheet 寫入失敗：HTTP '+res.status);
+    return {key, value};
+  },
+  async delete(key){
+    if(!sheetUrl) return null;
+    const res = await fetch(sheetUrl, {
+      method:'POST',
+      headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body: JSON.stringify({action:'delete', key})
+    });
+    if(!res.ok) throw new Error('Sheet 刪除失敗：HTTP '+res.status);
+    return {key, deleted:true};
+  }
+};
+
+async function loadCases(){
+  if(sheetUrl){
+    try{
+      updateSheetStatusLabel('syncing');
+      const res = await SheetStore.get(CASES_KEY);
+      sheetLastSyncAt = new Date().toISOString();
+      updateSheetStatusLabel('ok');
+      if(res && res.value){
+        const parsed = JSON.parse(res.value);
+        if(Array.isArray(parsed) && parsed.length){
+          cases = parsed;
+          try{ await Store.set(CASES_KEY, JSON.stringify(cases)); }catch(e){}
+          return;
+        }
+      }
+    }catch(e){
+      console.error('讀取 Google Sheet 個案清單失敗，改用本機資料', e);
+      updateSheetStatusLabel('error');
+    }
+  }
+  try{
+    const res = await Store.get(CASES_KEY);
+    if(res && res.value){
+      const parsed = JSON.parse(res.value);
+      if(Array.isArray(parsed) && parsed.length){
+        cases = parsed;
+        if(sheetUrl) saveCases(); // 將本機既有資料回寫初始化到 Sheet
+        return;
+      }
+    }
+  }catch(e){ /* 尚無個案清單 */ }
+  cases = [{id: genCaseId(), name:'個案 1', createdAt:new Date().toISOString()}];
+  await saveCases();
+}
+
+async function saveCases(){
+  try{ await Store.set(CASES_KEY, JSON.stringify(cases)); }
+  catch(e){ console.error('儲存個案清單失敗', e); }
+  if(sheetUrl){
+    try{
+      updateSheetStatusLabel('syncing');
+      await SheetStore.set(CASES_KEY, JSON.stringify(cases));
+      sheetLastSyncAt = new Date().toISOString();
+      updateSheetStatusLabel('ok');
+    }catch(e){
+      console.error('儲存個案清單至 Google Sheet 失敗', e);
+      updateSheetStatusLabel('error');
+    }
+  }
+}
+
+async function loadCurrentCaseId(){
+  let saved = null;
+  try{
+    const res = await Store.get(CURRENT_CASE_KEY);
+    if(res && res.value) saved = res.value;
+  }catch(e){ /* 尚未選擇過個案 */ }
+  currentCaseId = (saved && cases.some(c=>c.id===saved)) ? saved : cases[0].id;
+}
+
+async function setCurrentCaseId(id){
+  currentCaseId = id;
+  try{ await Store.set(CURRENT_CASE_KEY, id); }
+  catch(e){ console.error('儲存目前個案設定失敗', e); }
+}
+
+function currentCase(){
+  return cases.find(c=>c.id===currentCaseId) || cases[0];
+}
+
+function renderCaseBar(){
+  const select = document.getElementById('caseSelect');
+  select.innerHTML = '';
+  cases.forEach(c=>{
+    const opt = document.createElement('option');
+    opt.value = c.id;
+    opt.textContent = c.name;
+    if(c.id === currentCaseId) opt.selected = true;
+    select.appendChild(opt);
+  });
+  const modeLabel = document.getElementById('storageModeLabel');
+  const modeText = Store.mode === 'cloud' ? '☁️ 雲端同步（Claude.ai 內共用）'
+    : Store.mode === 'local' ? '💾 本機儲存（此瀏覽器）'
+    : '⚠️ 無法自動儲存';
+  modeLabel.textContent = '儲存模式：' + modeText;
+}
+
+async function switchToCase(id){
+  if(id === currentCaseId) return;
+  await setCurrentCaseId(id);
+  await loadState();
+  renderCaseBar();
+  renderAllMegas();
+  renderSummary();
+  updateLastUpdateBadge();
+}
+
+// ---- 進度資料 ----
+function defaultState(){
+  const megas = {};
+  MEGA.forEach(m=>{
+    const steps = {};
+    m.STEPS.forEach(s=>{
+      steps[s.id] = {status:'not_started', owner:'', target:'', actual:'', note:'', subs: s.sub.map(()=>false)};
+      if(s.meetingLog){ steps[s.id].meetings = []; }
+    });
+    megas[m.id] = {steps};
+  });
+  return {megas, updatedAt:null};
+}
+
+function mergeStateFromRaw(raw){
+  const parsed = JSON.parse(raw);
+  const base = defaultState();
+  MEGA.forEach(m=>{
+    const pm = parsed.megas && parsed.megas[m.id];
+    if(pm && pm.steps){
+      m.STEPS.forEach(s=>{
+        if(pm.steps[s.id]){
+          base.megas[m.id].steps[s.id] = Object.assign(base.megas[m.id].steps[s.id], pm.steps[s.id]);
+          const stObj = base.megas[m.id].steps[s.id];
+          if(!Array.isArray(stObj.subs) || stObj.subs.length !== s.sub.length){
+            stObj.subs = s.sub.map((_,i)=> (pm.steps[s.id].subs && pm.steps[s.id].subs[i]) || false);
+          }
+          if(s.meetingLog && !Array.isArray(stObj.meetings)){
+            stObj.meetings = [];
+          }
+        }
+      });
+    }
+  });
+  base.updatedAt = parsed.updatedAt || null;
+  return base;
+}
+
+async function loadState(){
+  if(sheetUrl){
+    try{
+      updateSheetStatusLabel('syncing');
+      const res = await SheetStore.get(progressKey(currentCaseId));
+      sheetLastSyncAt = new Date().toISOString();
+      updateSheetStatusLabel('ok');
+      if(res && res.value){
+        state = mergeStateFromRaw(res.value);
+        try{ await Store.set(progressKey(currentCaseId), res.value); }catch(e){}
+        return;
+      }
+    }catch(e){
+      console.error('讀取 Google Sheet 進度失敗，改用本機資料', e);
+      updateSheetStatusLabel('error');
+    }
+  }
+  try{
+    const res = await Store.get(progressKey(currentCaseId));
+    if(res && res.value){
+      state = mergeStateFromRaw(res.value);
+      return;
+    }
+  }catch(e){ /* 尚無此個案的進度資料 */ }
+  state = defaultState();
+}
+
+let saveTimer = null;
+function saveState(){
+  state.updatedAt = new Date().toISOString();
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(async ()=>{
+    const raw = JSON.stringify(state);
+    try{ await Store.set(progressKey(currentCaseId), raw); }
+    catch(e){ console.error('儲存失敗', e); }
+    if(sheetUrl){
+      try{
+        updateSheetStatusLabel('syncing');
+        await SheetStore.set(progressKey(currentCaseId), raw);
+        sheetLastSyncAt = new Date().toISOString();
+        updateSheetStatusLabel('ok');
+      }catch(e){
+        console.error('儲存進度至 Google Sheet 失敗', e);
+        updateSheetStatusLabel('error');
+      }
+    }
+  }, 300);
+  renderSummary();
+  updateLastUpdateBadge();
+}
+
+function updateLastUpdateBadge(){
+  const el = document.getElementById('lastUpdateBadge');
+  const cname = currentCase() ? currentCase().name : '';
+  if(!state.updatedAt){ el.textContent = `${cname}・尚未更新`; return; }
+  const d = new Date(state.updatedAt);
+  const pad = n=>String(n).padStart(2,'0');
+  el.textContent = `${cname}・最後更新 ${d.getFullYear()}/${pad(d.getMonth()+1)}/${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+function renderSummary(){
+  let totalDone = 0, total = 0;
+  MEGA.forEach(m=>{
+    const doneCount = m.STEPS.filter(s=>state.megas[m.id].steps[s.id].status==='done').length;
+    totalDone += doneCount; total += m.STEPS.length;
+    const badge = document.getElementById('tabBadge-'+m.id);
+    if(badge) badge.textContent = `${doneCount}/${m.STEPS.length} 完成`;
+  });
+  const pct = total ? Math.round(totalDone/total*100) : 0;
+  document.getElementById('pctLabel').textContent = pct+'%';
+  document.getElementById('barFill').style.width = pct+'%';
+}
+
+function cycleStatus(megaId, id){
+  const st = state.megas[megaId].steps[id];
+  const idx = STATUS_ORDER.indexOf(st.status);
+  st.status = STATUS_ORDER[(idx+1) % STATUS_ORDER.length];
+  saveState();
+  renderFlow(megaId);
+  renderStatusButton(megaId, id);
+}
+
+function renderStatusButton(megaId, id){
+  const btn = document.querySelector(`.status-btn[data-mega="${megaId}"][data-id="${id}"]`);
+  if(!btn) return;
+  const meta = STATUS_META[state.megas[megaId].steps[id].status];
+  btn.textContent = meta.label;
+  btn.style.background = meta.color;
+}
+
+function escapeHtml(str){
+  return (str||'').replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+
+// ---- 分頁與版面建立 ----
+function buildTabsAndSections(){
+  const tabsWrap = document.getElementById('megaTabs');
+  const sectionsWrap = document.getElementById('megaSections');
+  tabsWrap.innerHTML = '';
+  sectionsWrap.innerHTML = '';
+
+  MEGA.forEach(m=>{
+    const tab = document.createElement('button');
+    tab.type = 'button';
+    tab.className = 'mega-tab' + (m.id === activeMegaId ? ' active' : '');
+    tab.dataset.mega = m.id;
+    tab.innerHTML = `
+      <span class="mt-num">大階段 ${m.num}</span>
+      <span class="mt-title">${m.title}</span>
+      <span class="mt-badge" id="tabBadge-${m.id}">0/${m.STEPS.length} 完成</span>
+    `;
+    tab.onclick = ()=> activateTab(m.id);
+    tabsWrap.appendChild(tab);
+
+    const section = document.createElement('div');
+    section.className = 'mega-section' + (m.id === activeMegaId ? ' active' : '');
+    section.dataset.mega = m.id;
+    section.innerHTML = `
+      <div class="mega-section-head">
+        <div>
+          <h2 class="mega-section-title">${m.num}、${m.title}</h2>
+          <p class="mega-section-sub">來源：${m.source}</p>
+        </div>
+        <button class="mega-reset-btn" data-mega="${m.id}">重置本階段</button>
+      </div>
+      <h3 class="flow-title">流程總覽（點選節點可跳至下方核對清單）</h3>
+      <div class="flow-wrap"><div class="flow-track" id="flowTrack-${m.id}"></div></div>
+      <div id="checklist-${m.id}"></div>
+    `;
+    sectionsWrap.appendChild(section);
+
+    section.querySelector('.mega-reset-btn').addEventListener('click', async ()=>{
+      if(!confirm(`確定要重置「${m.num}、${m.title}」這個階段的所有進度資料嗎？此動作無法復原（其他階段不受影響）。`)) return;
+      const steps = {};
+      m.STEPS.forEach(s=>{ steps[s.id] = {status:'not_started', owner:'', target:'', actual:'', note:'', subs: s.sub.map(()=>false)}; });
+      state.megas[m.id] = {steps};
+      saveState();
+      renderFlow(m.id);
+      renderChecklist(m.id);
+    });
+  });
+}
+
+function activateTab(megaId){
+  activeMegaId = megaId;
+  document.querySelectorAll('.mega-section').forEach(sec=>{
+    sec.classList.toggle('active', sec.dataset.mega === megaId);
+  });
+  document.querySelectorAll('.mega-tab').forEach(btn=>{
+    btn.classList.toggle('active', btn.dataset.mega === megaId);
+  });
+}
+
+function renderFlow(megaId){
+  const m = MEGA.find(x=>x.id===megaId);
+  const track = document.getElementById('flowTrack-'+megaId);
+  if(!track) return;
+  track.innerHTML = '';
+  const phaseKeys = Object.keys(m.PHASES);
+  phaseKeys.forEach((pk, pIdx)=>{
+    const block = document.createElement('div');
+    block.className = 'phase-block';
+    block.style.setProperty('--phase-color', m.PHASES[pk].color);
+
+    const label = document.createElement('div');
+    label.className = 'phase-label';
+    label.style.setProperty('--phase-color', m.PHASES[pk].color);
+    label.textContent = `${pk}・${m.PHASES[pk].name}`;
+    block.appendChild(label);
+
+    const stepsWrap = document.createElement('div');
+    stepsWrap.className = 'phase-steps';
+
+    const stepsInPhase = m.STEPS.filter(s=>s.phase===pk);
+    stepsInPhase.forEach((s, sIdx)=>{
+      const node = document.createElement('div');
+      node.className = 'node' + (s.critical ? ' critical' : '');
+      node.style.setProperty('--phase-color', m.PHASES[pk].color);
+      node.onclick = ()=>{
+        activateTab(megaId);
+        const row = document.getElementById('step-'+megaId+'-'+s.id);
+        if(row){ row.open = true; row.scrollIntoView({behavior:'smooth', block:'center'}); }
+      };
+      node.innerHTML = `
+        <span class="num">${String(s.id).padStart(2,'0')}</span>
+        <span class="ttl">${s.title}</span>
+        ${s.dur ? `<span class="dur">${s.dur}</span>` : ''}
+        ${s.critical ? `<span class="critical-flag">⚠ 關鍵依存節點</span>` : ''}
+      `;
+      const chip = document.createElement('span');
+      chip.className = 'stchip';
+      chip.style.background = STATUS_META[state.megas[megaId].steps[s.id].status].color;
+      node.appendChild(chip);
+      stepsWrap.appendChild(node);
+
+      if(sIdx < stepsInPhase.length - 1){
+        const conn = document.createElement('div');
+        conn.className = 'connector';
+        conn.textContent = '→';
+        stepsWrap.appendChild(conn);
+      }
+    });
+
+    block.appendChild(stepsWrap);
+    track.appendChild(block);
+
+    if(pIdx < phaseKeys.length - 1){
+      const gap = document.createElement('div');
+      gap.className = 'connector phase-gap';
+      gap.textContent = '⇒';
+      track.appendChild(gap);
+    }
+  });
+}
+
+function renderMeetingLog(megaId, s){
+  const wrap = document.getElementById('meetinglog-'+megaId+'-'+s.id);
+  if(!wrap) return;
+  const stObj = state.megas[megaId].steps[s.id];
+  if(!Array.isArray(stObj.meetings)) stObj.meetings = [];
+  wrap.innerHTML = '';
+
+  const title = document.createElement('div');
+  title.className = 'meeting-log-title';
+  title.textContent = (s.meetingLabel || '會議') + '紀錄（可自行新增次數）';
+  wrap.appendChild(title);
+
+  if(!stObj.meetings.length){
+    const empty = document.createElement('div');
+    empty.className = 'meeting-empty';
+    empty.textContent = '尚未新增任何一次會議，請點下方「＋新增會議」建立紀錄。';
+    wrap.appendChild(empty);
+  }
+
+  stObj.meetings.forEach((mt, i)=>{
+    const row = document.createElement('div');
+    row.className = 'meeting-row';
+
+    const seq = document.createElement('div');
+    seq.className = 'meeting-seq';
+    seq.textContent = '第 ' + (i+1) + ' 次';
+    row.appendChild(seq);
+
+    const dateField = document.createElement('div');
+    dateField.className = 'mf';
+    dateField.innerHTML = `<label>日期</label><input type="text" placeholder="YYYY/MM/DD"/>`;
+    const dateInput = dateField.querySelector('input');
+    dateInput.value = mt.date || '';
+    dateInput.addEventListener('input', ()=>{ mt.date = dateInput.value; saveState(); });
+    row.appendChild(dateField);
+
+    const timeField = document.createElement('div');
+    timeField.className = 'mf';
+    timeField.innerHTML = `<label>時間</label><input type="text" placeholder="HH:MM"/>`;
+    const timeInput = timeField.querySelector('input');
+    timeInput.value = mt.time || '';
+    timeInput.addEventListener('input', ()=>{ mt.time = timeInput.value; saveState(); });
+    row.appendChild(timeField);
+
+    const noteField = document.createElement('div');
+    noteField.className = 'mf mf-note';
+    noteField.innerHTML = `<label>地點／決議摘要</label><input type="text" placeholder="會議地點、審查結論、修正事項等"/>`;
+    const noteInput = noteField.querySelector('input');
+    noteInput.value = mt.note || '';
+    noteInput.addEventListener('input', ()=>{ mt.note = noteInput.value; saveState(); });
+    row.appendChild(noteField);
+
+    const delBtn = document.createElement('button');
+    delBtn.type = 'button';
+    delBtn.className = 'meeting-del';
+    delBtn.textContent = '刪除';
+    delBtn.onclick = ()=>{
+      stObj.meetings.splice(i,1);
+      saveState();
+      renderMeetingLog(megaId, s);
+    };
+    row.appendChild(delBtn);
+
+    wrap.appendChild(row);
+  });
+
+  const addBtn = document.createElement('button');
+  addBtn.type = 'button';
+  addBtn.className = 'meeting-add-btn';
+  addBtn.textContent = '＋ 新增一次會議';
+  addBtn.onclick = ()=>{
+    stObj.meetings.push({date:'', time:'', note:''});
+    saveState();
+    renderMeetingLog(megaId, s);
+  };
+  wrap.appendChild(addBtn);
+}
+
+function renderChecklist(megaId){
+  const m = MEGA.find(x=>x.id===megaId);
+  const wrap = document.getElementById('checklist-'+megaId);
+  if(!wrap) return;
+  wrap.innerHTML = '';
+  Object.keys(m.PHASES).forEach(pk=>{
+    const stepsInPhase = m.STEPS.filter(s=>s.phase===pk);
+    const section = document.createElement('div');
+    section.className = 'phase-section';
+    section.style.setProperty('--phase-color', m.PHASES[pk].color);
+
+    const header = document.createElement('div');
+    header.className = 'phase-header';
+    header.style.setProperty('--phase-color', m.PHASES[pk].color);
+    header.innerHTML = `
+      <span class="ph-code" style="background:${m.PHASES[pk].color}">${pk}</span>
+      <h2>${m.PHASES[pk].name}</h2>
+      ${m.PHASES[pk].owner ? `<span class="ph-owner">${m.PHASES[pk].owner}</span>` : ''}
+      <span class="ph-count">${stepsInPhase[0].id}–${stepsInPhase[stepsInPhase.length-1].id}</span>
+    `;
+    section.appendChild(header);
+
+    stepsInPhase.forEach(s=>{
+      const row = document.createElement('details');
+      row.className = 'step-row' + (s.critical ? ' critical' : '');
+      row.id = 'step-'+megaId+'-'+s.id;
+
+      const summary = document.createElement('summary');
+      summary.innerHTML = `
+        <span class="step-idx">${String(s.id).padStart(2,'0')}</span>
+        <span class="step-main">
+          <span class="step-title">${s.title}</span>
+          ${s.dur ? `<span class="step-dur">⏱ ${s.dur}</span>` : ''}
+          ${s.critical ? `<span class="step-flag">⚠ 關鍵依存節點：容積移轉須於重建計畫核准前完成</span>` : ''}
+        </span>
+      `;
+      const statusBtn = document.createElement('button');
+      statusBtn.className = 'status-btn';
+      statusBtn.type = 'button';
+      statusBtn.setAttribute('data-mega', megaId);
+      statusBtn.setAttribute('data-id', s.id);
+      statusBtn.onclick = (e)=>{ e.preventDefault(); e.stopPropagation(); cycleStatus(megaId, s.id); };
+      const meta = STATUS_META[state.megas[megaId].steps[s.id].status];
+      statusBtn.textContent = meta.label;
+      statusBtn.style.background = meta.color;
+      summary.appendChild(statusBtn);
+      row.appendChild(summary);
+
+      const detail = document.createElement('div');
+      detail.className = 'step-detail';
+
+      if(s.sub.length){
+        const ul = document.createElement('ul');
+        ul.className = 'sub-list';
+        s.sub.forEach((txt, i)=>{
+          const li = document.createElement('li');
+          const cb = document.createElement('input');
+          cb.type = 'checkbox';
+          cb.checked = !!state.megas[megaId].steps[s.id].subs[i];
+          cb.onchange = ()=>{
+            state.megas[megaId].steps[s.id].subs[i] = cb.checked;
+            span.classList.toggle('checked', cb.checked);
+            saveState();
+          };
+          const span = document.createElement('span');
+          span.textContent = txt;
+          if(cb.checked) span.classList.add('checked');
+          li.appendChild(cb);
+          li.appendChild(span);
+          ul.appendChild(li);
+        });
+        detail.appendChild(ul);
+      }
+
+      if(s.meetingLog){
+        const meetingWrap = document.createElement('div');
+        meetingWrap.className = 'meeting-log';
+        meetingWrap.id = 'meetinglog-'+megaId+'-'+s.id;
+        detail.appendChild(meetingWrap);
+        renderMeetingLog(megaId, s);
+      }
+
+      const fields = document.createElement('div');
+      fields.className = 'fields';
+      const stObj = state.megas[megaId].steps[s.id];
+      fields.innerHTML = `
+        <div class="field">
+          <label>負責人</label>
+          <input type="text" data-f="owner" value="${escapeHtml(stObj.owner)}" placeholder="評估機構 / 建築師 / 業務 / 工地主任"/>
+        </div>
+        <div class="field">
+          <label>預定日期</label>
+          <input type="text" data-f="target" value="${escapeHtml(stObj.target)}" placeholder="MM/DD"/>
+        </div>
+        <div class="field">
+          <label>實際完成日期</label>
+          <input type="text" data-f="actual" value="${escapeHtml(stObj.actual)}" placeholder="MM/DD"/>
+        </div>
+        <div class="field" style="grid-column:1/-1">
+          <label>備註</label>
+          <textarea data-f="note" placeholder="評估分數、同意比例進度、勘驗結果、補正原因等">${escapeHtml(stObj.note)}</textarea>
+        </div>
+      `;
+      fields.querySelectorAll('[data-f]').forEach(input=>{
+        input.addEventListener('input', ()=>{
+          state.megas[megaId].steps[s.id][input.getAttribute('data-f')] = input.value;
+          saveState();
+        });
+      });
+      detail.appendChild(fields);
+
+      row.appendChild(detail);
+      section.appendChild(row);
+    });
+
+    wrap.appendChild(section);
+  });
+}
+
+function renderAllMegas(){
+  MEGA.forEach(m=>{
+    renderFlow(m.id);
+    renderChecklist(m.id);
+  });
+}
+
+// ---- 全部個案重置 ----
+document.getElementById('resetBtn').addEventListener('click', async ()=>{
+  const cname = currentCase() ? currentCase().name : '此個案';
+  if(!confirm(`確定要重置個案「${cname}」全部四大階段的所有進度資料嗎？此動作無法復原（其他個案不受影響）。`)) return;
+  state = defaultState();
+  saveState();
+  renderAllMegas();
+});
+
+// ---- 個案切換／新增／重新命名／刪除 ----
+document.getElementById('caseSelect').addEventListener('change', (e)=>{
+  switchToCase(e.target.value);
+});
+
+document.getElementById('newCaseBtn').addEventListener('click', async ()=>{
+  const name = prompt('請輸入新個案／專案名稱（建議填寫案址或建案名稱）：', '');
+  if(!name || !name.trim()) return;
+  const id = genCaseId();
+  cases.push({id, name:name.trim(), createdAt:new Date().toISOString()});
+  await saveCases();
+  await setCurrentCaseId(id);
+  state = defaultState();
+  saveState();
+  renderCaseBar();
+  renderAllMegas();
+});
+
+document.getElementById('renameCaseBtn').addEventListener('click', async ()=>{
+  const cur = currentCase();
+  if(!cur) return;
+  const name = prompt('重新命名目前個案／專案：', cur.name);
+  if(!name || !name.trim()) return;
+  cur.name = name.trim();
+  await saveCases();
+  renderCaseBar();
+  updateLastUpdateBadge();
+});
+
+document.getElementById('deleteCaseBtn').addEventListener('click', async ()=>{
+  if(cases.length <= 1){ alert('至少須保留一個個案，無法刪除最後一個個案。'); return; }
+  const cur = currentCase();
+  if(!confirm(`確定要刪除個案「${cur.name}」及其全部四大階段的進度資料嗎？此動作無法復原。`)) return;
+  try{ await Store.delete(progressKey(currentCaseId)); }catch(e){ /* 資料可能本來就不存在 */ }
+  if(sheetUrl){ try{ await SheetStore.delete(progressKey(currentCaseId)); }catch(e){ /* 略過 */ } }
+  cases = cases.filter(c=>c.id !== currentCaseId);
+  await saveCases();
+  await setCurrentCaseId(cases[0].id);
+  await loadState();
+  renderCaseBar();
+  renderAllMegas();
+  renderSummary();
+  updateLastUpdateBadge();
+});
+
+// ---- 分享／匯出備份（可在手機上直接透過 LINE、訊息、郵件等 App 傳送檔案）----
+async function collectAllProgress(){
+  const progress = {};
+  for(const c of cases){
+    if(c.id === currentCaseId){ progress[c.id] = state; continue; }
+    try{
+      const res = await Store.get(progressKey(c.id));
+      if(res && res.value) progress[c.id] = JSON.parse(res.value);
+    }catch(e){ /* 略過讀取失敗的個案 */ }
+  }
+  return progress;
+}
+
+async function exportBackup(){
+  const progress = await collectAllProgress();
+  const payload = {exportedAt: new Date().toISOString(), cases, progress};
+  const d = new Date();
+  const pad = n=>String(n).padStart(2,'0');
+  const filename = `全流程專案進度_備份_${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}.json`;
+  const blob = new Blob([JSON.stringify(payload, null, 2)], {type:'application/json'});
+
+  if(navigator.canShare){
+    try{
+      const file = new File([blob], filename, {type:'application/json'});
+      if(navigator.canShare({files:[file]})){
+        await navigator.share({files:[file], title:'都更・建照・營建・使照 全流程進度備份', text:filename});
+        return;
+      }
+    }catch(e){ /* 使用者取消分享或裝置不支援，改用下載 */ }
+  }
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
+function handleImportFile(file){
+  const reader = new FileReader();
+  reader.onload = async (e)=>{
+    let data;
+    try{
+      data = JSON.parse(e.target.result);
+      if(!data || !Array.isArray(data.cases) || !data.cases.length) throw new Error('檔案內容格式不正確');
+    }catch(err){
+      alert('匯入失敗，檔案格式不正確：'+err.message);
+      return;
+    }
+    if(!confirm('匯入將會覆蓋目前所有個案的資料，確定要匯入嗎？')) return;
+    try{
+      cases = data.cases;
+      await saveCases();
+      for(const c of cases){
+        if(data.progress && data.progress[c.id]){
+          await Store.set(progressKey(c.id), JSON.stringify(data.progress[c.id]));
+        }
+      }
+      await setCurrentCaseId(cases[0].id);
+      await loadState();
+      renderCaseBar();
+      renderAllMegas();
+      renderSummary();
+      updateLastUpdateBadge();
+      alert('匯入完成。');
+    }catch(err){
+      alert('匯入時發生錯誤：'+err.message);
+    }
+  };
+  reader.readAsText(file, 'utf-8');
+}
+
+document.getElementById('shareBtn').addEventListener('click', exportBackup);
+document.getElementById('importBtn').addEventListener('click', ()=>{
+  document.getElementById('importFileInput').click();
+});
+document.getElementById('importFileInput').addEventListener('change', (e)=>{
+  const file = e.target.files && e.target.files[0];
+  if(file) handleImportFile(file);
+  e.target.value = '';
+});
+
+// ---- 匯出彩色 PDF（一次列印全部四大階段，展開所有項目並保留狀態顏色）----
+let savedOpenStates = null;
+function exportPDF(){
+  const rows = document.querySelectorAll('.step-row');
+  savedOpenStates = Array.from(rows).map(r=>r.open);
+  rows.forEach(r=>{ r.open = true; });
+  document.getElementById('printCaseTitle').textContent =
+    `都更・建照・營建・使照 全流程專案進度追蹤表 — ${currentCase() ? currentCase().name : ''}`;
+  document.getElementById('printCaseDate').textContent =
+    '匯出時間：' + new Date().toLocaleString('zh-TW');
+  window.print();
+}
+window.addEventListener('afterprint', ()=>{
+  if(savedOpenStates){
+    document.querySelectorAll('.step-row').forEach((r,i)=>{ r.open = savedOpenStates[i]; });
+    savedOpenStates = null;
+  }
+});
+document.getElementById('pdfBtn').addEventListener('click', exportPDF);
+
+// ---- 下載 Google Sheet 設定教學 ----
+document.getElementById('sheetGuideBtn').addEventListener('click', ()=>{
+  const guide = [
+'═══════════════════════════════════════════════════',
+'都更・建照・營建・使照 全流程專案進度追蹤表',
+'Google Sheet 多人同步 — 設定教學',
+'═══════════════════════════════════════════════════',
+'',
+'完成以下一次性設定後，團隊成員只要在自己的瀏覽器打開追蹤表網頁、',
+'貼上同一組網址連接，就能共同編輯、即時看到彼此更新的進度。',
+'',
+'【第一步】建立 Google 試算表',
+'1. 前往 https://sheets.google.com，建立一份新的空白試算表（表格內容不需要自己建立欄位，',
+'   程式碼會自動處理），可自行命名，例如「都更建照營建使照_進度資料庫」。',
+'',
+'【第二步】開啟 Apps Script 編輯器',
+'1. 在試算表上方選單點選「擴充功能」→「Apps Script」。',
+'2. 系統會開啟一個新分頁的指令碼編輯器，預設會有一個 Code.gs 檔案。',
+'',
+'【第三步】貼上程式碼',
+'1. 把 Code.gs 裡原本的內容全部刪除。',
+'2. 貼上下方【Apps Script 完整程式碼】的全部內容。',
+'3. 按左上角的「儲存」（磁片圖示），可自行命名此專案，例如「進度追蹤同步」。',
+'',
+'【第四步】部署為網路應用程式',
+'1. 點選右上角「部署」→「新增部署作業」。',
+'2. 左側齒輪圖示選擇類型為「網頁應用程式」。',
+'3. 設定：執行身分＝我；誰可以存取＝所有人。',
+'4. 點「部署」，第一次會跳出 Google 帳號授權畫面，選擇你的帳號並允許權限',
+'   （會顯示「未經 Google 驗證」的警告是正常現象，點「進階」→「前往（專案名稱）(不安全)」即可繼續）。',
+'5. 部署完成後會顯示一組網址，格式類似：',
+'   https://script.google.com/macros/s/xxxxxxxxxxxxxxxxxxxxx/exec',
+'   請完整複製這組網址（結尾是 /exec）。',
+'',
+'【第五步】在追蹤表網頁連接',
+'1. 開啟本追蹤表網頁，點選上方「🔗 連接 Google Sheet」按鈕。',
+'2. 貼上剛剛複製的網址，按下確定，出現「連接成功」訊息即完成。',
+'',
+'【第六步】讓團隊成員一起使用',
+'1. 把追蹤表 HTML 檔案以及同一組 Apps Script 網址一起分享給同事。',
+'2. 同事開啟追蹤表，同樣點「🔗 連接 Google Sheet」貼上同一組網址即可同步。',
+'3. 可點選「🔄 立即同步」按鈕手動重新讀取一次。',
+'',
+'【重要提醒】',
+'- 這組網址等同於資料庫的存取金鑰，請只分享給信任的團隊成員。',
+'- 若沒有設定 Google Sheet，網頁仍會照常運作，只是改用本機／雲端儲存。',
+'',
+'',
+'═══════════════════════════════════════════════════',
+'【Apps Script 完整程式碼】— 全部複製貼到 Code.gs',
+'═══════════════════════════════════════════════════',
+'',
+'function getSheet_(){',
+'  var ss = SpreadsheetApp.getActiveSpreadsheet();',
+'  var sheet = ss.getSheetByName(\'Data\');',
+'  if(!sheet){',
+'    sheet = ss.insertSheet(\'Data\');',
+'    sheet.appendRow([\'key\', \'value\', \'updatedAt\']);',
+'  }',
+'  return sheet;',
+'}',
+'',
+'function findRow_(sheet, key){',
+'  var data = sheet.getDataRange().getValues();',
+'  for(var i = 1; i < data.length; i++){',
+'    if(String(data[i][0]) === String(key)){',
+'      return i + 1;',
+'    }',
+'  }',
+'  return -1;',
+'}',
+'',
+'function doGet(e){',
+'  var sheet = getSheet_();',
+'  var params = e.parameter || {};',
+'',
+'  if(params.action === \'list\'){',
+'    var data = sheet.getDataRange().getValues();',
+'    var keys = [];',
+'    for(var i = 1; i < data.length; i++){',
+'      var k = String(data[i][0]);',
+'      if(!params.prefix || k.indexOf(params.prefix) === 0){',
+'        keys.push(k);',
+'      }',
+'    }',
+'    return ContentService.createTextOutput(JSON.stringify({keys: keys}))',
+'      .setMimeType(ContentService.MimeType.JSON);',
+'  }',
+'',
+'  var key = params.key;',
+'  if(!key){',
+'    return ContentService.createTextOutput(JSON.stringify({error: \'缺少 key 參數\'}))',
+'      .setMimeType(ContentService.MimeType.JSON);',
+'  }',
+'  var row = findRow_(sheet, key);',
+'  if(row === -1){',
+'    return ContentService.createTextOutput(JSON.stringify({key: key, value: null}))',
+'      .setMimeType(ContentService.MimeType.JSON);',
+'  }',
+'  var value = sheet.getRange(row, 2).getValue();',
+'  return ContentService.createTextOutput(JSON.stringify({key: key, value: String(value)}))',
+'    .setMimeType(ContentService.MimeType.JSON);',
+'}',
+'',
+'function doPost(e){',
+'  var sheet = getSheet_();',
+'  var body;',
+'  try{',
+'    body = JSON.parse(e.postData.contents);',
+'  }catch(err){',
+'    return ContentService.createTextOutput(JSON.stringify({error: \'無法解析請求內容\'}))',
+'      .setMimeType(ContentService.MimeType.JSON);',
+'  }',
+'',
+'  var action = body.action;',
+'  var key = body.key;',
+'  var now = new Date().toISOString();',
+'',
+'  if(action === \'delete\'){',
+'    var rowToDelete = findRow_(sheet, key);',
+'    if(rowToDelete > 0){',
+'      sheet.deleteRow(rowToDelete);',
+'    }',
+'    return ContentService.createTextOutput(JSON.stringify({ok: true}))',
+'      .setMimeType(ContentService.MimeType.JSON);',
+'  }',
+'',
+'  var value = body.value;',
+'  var row = findRow_(sheet, key);',
+'  if(row > 0){',
+'    sheet.getRange(row, 2).setValue(value);',
+'    sheet.getRange(row, 3).setValue(now);',
+'  }else{',
+'    sheet.appendRow([key, value, now]);',
+'  }',
+'  return ContentService.createTextOutput(JSON.stringify({ok: true, key: key}))',
+'    .setMimeType(ContentService.MimeType.JSON);',
+'}'
+  ].join('\n');
+  const blob = new Blob([guide], {type:'text/plain;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'Google_Sheet_同步設定教學.txt';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+});
+
+// ---- 連接 Google Sheet ----
+document.getElementById('sheetBtn').addEventListener('click', async ()=>{
+  const current = sheetUrl || '';
+  const url = prompt('請貼上已部署的 Google Apps Script 網路應用程式網址（結尾通常為 /exec）。\n若尚未設定，請先下載「設定教學」依步驟建立，或留白後按確定以取消連接：', current);
+  if(url === null) return;
+  const trimmed = url.trim();
+  if(!trimmed){
+    sheetUrl = null;
+    try{ localStorage.removeItem(SHEET_URL_KEY); }catch(e){}
+    updateSheetStatusLabel();
+    alert('已取消連接 Google Sheet，將只使用原本的儲存方式。');
+    return;
+  }
+  const testUrl = trimmed;
+  sheetUrl = testUrl;
+  updateSheetStatusLabel('syncing');
+  try{
+    const res = await fetch(testUrl + '?key=' + encodeURIComponent(CASES_KEY));
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    await res.json();
+    try{ localStorage.setItem(SHEET_URL_KEY, testUrl); }catch(e){}
+    alert('連接成功！即將同步個案與進度資料。');
+    await loadCases();
+    await loadCurrentCaseId();
+    await loadState();
+    renderCaseBar();
+    renderAllMegas();
+    renderSummary();
+    updateLastUpdateBadge();
+  }catch(e){
+    console.error(e);
+    sheetUrl = null;
+    updateSheetStatusLabel();
+    alert('連接失敗，請確認網址是否正確、Apps Script 是否已部署為「所有人」皆可存取。錯誤訊息：'+e.message);
+  }
+});
+
+document.getElementById('sheetSyncBtn').addEventListener('click', async ()=>{
+  if(!sheetUrl) return;
+  await loadCases();
+  await loadCurrentCaseId();
+  await loadState();
+  renderCaseBar();
+  renderAllMegas();
+  renderSummary();
+  updateLastUpdateBadge();
+});
+
+async function init(){
+  if(Store.mode === 'none'){
+    document.getElementById('storageWarning').style.display = 'block';
+  }
+  updateSheetStatusLabel();
+  buildTabsAndSections();
+  await loadCases();
+  await loadCurrentCaseId();
+  await loadState();
+  renderCaseBar();
+  renderAllMegas();
+  renderSummary();
+  updateLastUpdateBadge();
+}
+init();
+</script>
+</body>
+</html>
